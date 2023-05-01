@@ -1,5 +1,5 @@
 <template>
-  <div class="container" style="width: 60%; margin: 30px auto">
+  <div class="container" style="width: 60%; margin: 100px auto">
     <!-- register -->
     <div class="form-container sign-up-container">
       <div class="form">

@@ -33,8 +33,12 @@
               style="display: inline-box; vertical-align: middle"
             ></el-avatar>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>个人中心</el-dropdown-item>
-              <el-dropdown-item>我的竞赛</el-dropdown-item>
+              <el-dropdown-item @click.native="toPersonInfor"
+                >个人中心</el-dropdown-item
+              >
+              <el-dropdown-item @click.native="toMyCom"
+                >我的竞赛</el-dropdown-item
+              >
               <el-dropdown-item @click.native="logout"
                 >退出账号</el-dropdown-item
               >
@@ -62,6 +66,7 @@
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
                 :disabled="$store.getters.getUser.roleName != '老师'"
+                @click.native="toPostCompetition"
                 >竞赛</el-dropdown-item
               >
               <el-dropdown-item @click.native="toPostArticle"
@@ -93,6 +98,14 @@ export default {
   },
   created() {},
   methods: {
+    toPersonInfor() {
+      this.$router.push("/personInfor");
+      this.activeIndex = "/personInfor";
+    },
+    toMyCom() {
+      this.$router.push("/myCompetition");
+      this.activeIndex = "/myCompetition";
+    },
     //回车搜索事件
     search() {
       this.$store.dispatch("asyncUpdateSearchKey", this.wordkey);
@@ -116,6 +129,10 @@ export default {
     toPostArticle() {
       this.$router.push("/postArticle");
       this.activeIndex = "/postArticle";
+    },
+    toPostCompetition() {
+      this.$router.push("/postCompetition");
+      this.activeIndex = "/postCompetition";
     },
     toInfor() {
       this.$router.push("/infor");

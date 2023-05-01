@@ -1,10 +1,7 @@
 <template>
   <div>
     <div style="text-align: center; margin: 0 40px">
-      <el-image
-        style="width: 100%"
-        src="https://publicqn.saikr.com/2023/03/21/contest6419545d1dabf1.217575491679381639411.png?imageView2/2/w/1080"
-      ></el-image>
+      <el-image style="width: 100%" :src="competition.picturepath"></el-image>
     </div>
     <div style="margin: 0 40px">
       <el-row type="flex" justify="space-between">
@@ -23,9 +20,12 @@
             style="float: right"
             :disabled="
               competition.signUpText == '报名请登录' ||
-              competition.signUpText == '已报名'
+              competition.signUpText == '已报名' ||
+              competition.sighUpText == '报名未开始' ||
+              $store.getters.getUser.roleName == '老师' ||
+              $store.getters.getUser.roleName == '管理员'
             "
-            >{{competition.signUpText}}</el-button
+            >{{ competition.signUpText }}</el-button
           >
           <div>
             <span>报名时间 距离报名截止还有{{ competition.remain }}天</span
@@ -53,6 +53,7 @@ export default {
   },
   created() {
     this.competition = this.$store.getters.getCompetition;
+    console.log("获取该竞赛信息", this.competition);
   },
 };
 </script>

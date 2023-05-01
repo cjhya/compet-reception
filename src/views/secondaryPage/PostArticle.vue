@@ -29,8 +29,10 @@ export default {
   },
   methods: {
     cancel() {
-      (this.articleForm = { name: "" }), (this.$refs.contentEditor.html = "");
+      this.articleForm = { name: "" };
+      this.$refs.contentEditor.html = "";
       this.$router.push("/frontPage");
+      this.$emit("changeIndex","/frontPage")
     },
     async postArt() {
       console.log("获取的用户信息", this.$store.getters.getUser);
@@ -45,6 +47,7 @@ export default {
         userId: this.$store.getters.getUser.userId,
       });
       this.$router.push("/forum");
+      this.$emit("changeIndex", "/forum");
     },
   },
 };

@@ -16,7 +16,10 @@ import PersonalSignUp from "../views/signUp/PersonalSignUp.vue";
 import TeamSignUp from "../views/signUp/TeamSignUp.vue";
 import SysNotice from "../views/message/SysNotice.vue";
 import MyMessage from "../views/message/MyMessage.vue";
-import SearchRes from "../views/secondaryPage/SearchRes.vue"
+import SearchRes from "../views/secondaryPage/SearchRes.vue";
+import PostCompetition from "../views/secondaryPage/PostCompetition.vue";
+import MyCompetition from "../views/myCompetition/MyCompetition.vue";
+import PersonInfor from "../views/personInfor/PersonInfor.vue"
 
 Vue.use(Router);
 
@@ -37,6 +40,7 @@ const router = new Router({
         { path: "/competition", component: Competition },
         { path: "/forum", component: Forum },
         { path: "/postArticle", component: PostArticle },
+        { path: "/postCompetition", component: PostCompetition },
         {
           path: "/infor",
           component: Infor,
@@ -60,9 +64,17 @@ const router = new Router({
         { path: "/personalSignUp", component: PersonalSignUp },
         { path: "/teamSignUp", component: TeamSignUp },
         { path: "/searchRes", component: SearchRes },
+        { path: "/myCompetition", component: MyCompetition },
+        { path: "/personInfor", component: PersonInfor },
       ],
     },
   ],
 });
+
+//解决重复点击相同路径
+const VueRouterPush = Router.prototype.push
+Router.prototype.push = function push (to) {
+  return VueRouterPush.call(this, to).catch(err => err)
+}
 
 export default router;

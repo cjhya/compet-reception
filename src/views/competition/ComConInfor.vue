@@ -1,5 +1,5 @@
 <template>
-  <div style="margin: 0 40px">
+  <div style="margin: 0 40px 10px 40px">
     <el-row>
       <el-col :span="18"
         ><h1>{{ competition.comName }}{{ competition.absComName }}</h1>
@@ -17,12 +17,19 @@
         <h3>类型 {{ competition.comType }}</h3>
         <h3>主办方</h3>
         <p>{{ competition.absComHost }}</p>
-        <h3>报名时间 距离报名截止还有{{competition.remain}}天</h3>
-        <p>{{ competition.comLoginstarttime }} 至 {{competition.comLoginendtime}}</p>
+        <h3>报名时间 距离报名截止还有{{ competition.remain }}天</h3>
+        <p>
+          {{ competition.comLoginstarttime }} 至
+          {{ competition.comLoginendtime }}
+        </p>
         <h3>比赛时间 尚未开始</h3>
-        <p>{{ competition.comDostarttime }} 至 {{competition.comDoendtime}}</p>
+        <p>
+          {{ competition.comDostarttime }} 至 {{ competition.comDoendtime }}
+        </p>
         <h3>竞赛类别</h3>
-        <p>数学建模</p></el-col
+        <p>数学建模</p>
+        <h3>关注竞赛 <span style="font-size:12px">以后会第一时间收到消息</span></h3>
+        <el-button><i class="el-icon-star-off"></i>关注</el-button></el-col
       >
     </el-row>
   </div>

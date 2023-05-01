@@ -19,7 +19,7 @@
                 <span style="font-size: 15px; color: #22bfa7">{{
                   item.state
                 }}</span>
-                {{ item.comName }}{{ item.absComName }}
+                {{ item.comName }}
               </h1>
               <p>主办方 {{ item.absComHost }}</p>
               <p>竞赛级别 {{ item.absComLevel }}</p>
@@ -35,7 +35,9 @@
               <el-button
                 @click="sighUp(item)"
                 :disabled="
-                  item.signUpText == '报名请登录' || item.signUpText == '已报名'
+                  item.signUpText == '报名请登录' ||
+                  item.signUpText == '已报名' ||
+                  item.sighUpText == '报名未开始'
                 "
                 >{{ item.signUpText }}</el-button
               >
@@ -99,6 +101,8 @@ export default {
             //报名该竞赛
             comp.sighUpText = "已报名";
           }
+        } else if (comp.state == "未开始") {
+          comp.signUpText = "报名未开始";
         }
       }
     },

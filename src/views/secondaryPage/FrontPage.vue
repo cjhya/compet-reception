@@ -29,12 +29,9 @@
             @click.native="toComInfor(item)"
           >
             <div>
-              <el-image
-                src="https://publicqn.saikr.com/e9a415c2a88946e825877e81b91e337a1681724109481.png"
-              ></el-image>
+              <el-image :src="item.picturepath"></el-image>
               <p>
-                <el-tag size="mini">{{ item.state }}</el-tag> {{ item.comName
-                }}
+                <el-tag size="mini">{{ item.state }}</el-tag> {{ item.comName }}
               </p>
               <p>主办方: {{ item.absComHost }}</p>
             </div>

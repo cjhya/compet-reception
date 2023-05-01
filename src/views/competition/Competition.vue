@@ -62,7 +62,7 @@
             <span style="font-size: 15px; color: #22bfa7">{{
               item.state
             }}</span>
-            {{ item.comName }}{{ item.absComName }}
+            {{ item.comName }}
           </h1>
           <p>主办方 {{ item.absComHost }}</p>
           <p>竞赛级别 {{ item.absComLevel }}</p>
@@ -77,11 +77,15 @@
           <el-button
             @click="sighUp(item)"
             :disabled="
-              item.signUpText == '报名请登录' || item.signUpText == '已报名'
+              item.signUpText == '报名请登录' ||
+              item.signUpText == '已报名' ||
+              item.signUpText == '报名未开始' ||
+              $store.getters.getUser.roleName == '老师' ||
+              $store.getters.getUser.roleName == '管理员'
             "
             >{{ item.signUpText }}</el-button
           >
-          <h2>距离报名截止还有{{ item.remain }}天</h2>
+          <h2>距离报名{{ item.statusText }}还有{{ item.remain }}天</h2>
           <span @click="toComInfor(item)"
             >竞赛详情<i class="el-icon-arrow-right"></i
           ></span>
@@ -163,22 +167,22 @@ export default {
       const { data: res } = await this.$http.get("subject/getsubject");
       this.classList = res.data;
       this.classList.unshift({
-        natureId: "100",
+        natureId: "1001",
         natureName: "竞赛类别",
-        children: [{ subjectId: "", subjectName: "全部" }],
+        children: [{ subjectId: "1000", subjectName: "全部" }],
       });
     },
     //点击分类获取竞赛
     async getCompets(id, name) {
       this.activeSubjectId = id;
       this.activeSubjectName = name;
+      if (name == "全部") this.activeSubjectId = "";
       const { data: res } = await this.$http.get(
         "competition/getcompetitionbysubjectandlevel?subjectId=" +
           this.activeSubjectId +
           "&level=" +
-          this.activeLevel
+          (this.activeLevel == "全部" ? "" : this.activeLevel)
       );
-      console.log("返回信息", res);
       this.compets = res.data;
       for (let comp of this.compets) {
         if (comp.state == "正在报名") {
@@ -191,6 +195,14 @@ export default {
             //报名该竞赛
             comp.sighUpText = "已报名";
           }
+        } else if (comp.state == "未开始") {
+          comp.signUpText = "报名未开始";
+        }
+        if (comp.remain < 0) {
+          comp.remain = -comp.remain;
+          comp.statusText = "开始";
+        } else {
+          comp.statusText = "截止";
         }
       }
     },
@@ -216,6 +228,14 @@ export default {
             //报名该竞赛
             comp.sighUpText = "已报名";
           }
+        } else if (comp.state == "未开始") {
+          comp.signUpText = "报名未开始";
+        }
+        if (comp.remain < 0) {
+          comp.remain = -comp.remain;
+          comp.statusText = "开始";
+        } else {
+          comp.statusText = "截止";
         }
       }
     },
@@ -231,7 +251,7 @@ export default {
       this.$store.dispatch("asyncUpdateCompetition", competition);
       console.log("竞赛信息", this.$store.getters.getCompetition);
       this.$router.push("/comInfor");
-      this.$emit("changeInd")
+      this.$emit("changeInd");
     },
     //报名按钮
     sighUp(competition) {
@@ -242,7 +262,7 @@ export default {
       } else {
         this.$router.push("/teamSignUp");
       }
-      this.$emit("changeInd")
+      this.$emit("changeInd");
     },
   },
 };
