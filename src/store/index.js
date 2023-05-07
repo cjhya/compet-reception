@@ -10,6 +10,9 @@ const state = {
   note: {},
   article: {},
   searchKey: "",
+  record: {},
+  //与某人聊天
+  chatPerson: {},
 };
 
 //获取state数据
@@ -28,6 +31,12 @@ const getters = {
   },
   getSearchKey(state) {
     return state.searchKey;
+  },
+  getRecord(state) {
+    return state.record;
+  },
+  getChatPerson(state) {
+    return state.chatPerson;
   },
 };
 
@@ -48,6 +57,12 @@ const mutations = {
   updateSearchKey(state, data) {
     state.searchKey = data;
   },
+  updateRecord(state, data) {
+    state.record = data;
+  },
+  updateChatPerson(state, data) {
+    state.chatPerson = data;
+  },
 };
 
 //异步执行mutations方法
@@ -66,6 +81,12 @@ const actions = {
   },
   asyncUpdateSearchKey(content, searchKey) {
     content.commit("updateSearchKey", searchKey);
+  },
+  asyncUpdateRecord(content, record) {
+    content.commit("updateRecord", record);
+  },
+  asyncUpdateChatPerson(content, chatPerson) {
+    content.commit("updateChatPerson", chatPerson);
   },
 };
 

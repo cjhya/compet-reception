@@ -106,7 +106,6 @@ export default {
     //提交登录
     async login() {
       const { data: res } = await this.$http.post("login/", this.loginForm);
-      console.log("登录返回信息", res);
       this.$store.dispatch("asyncUpdateUser", res.data);
       this.$emit("judgeLogin");
       this.$message({
@@ -115,15 +114,14 @@ export default {
         type: "success",
       });
       this.$router.push("/frontPage");
+      console.log("用户个人信息",this.$store.getters.getUser)
     },
     //提交注册
     async register() {
-      console.log("注册表单", this.registerForm);
       const { data: res } = await this.$http.post(
         "login/regist",
         this.registerForm
       );
-      console.log("注册返回信息", res);
     },
   },
 };

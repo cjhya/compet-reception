@@ -1,5 +1,5 @@
 <template>
-  <div style="margin: 10px 40px">
+  <div style="margin: 10px 200px">
     <el-card>
       <div slot="header">
         <span>{{ $store.getters.getCompetition.comName }}</span>
@@ -178,20 +178,16 @@ export default {
           this.$store.getters.getUser.userId
       );
       this.joinComs = res.data;
-      console.log("我参加的竞赛", this.joinComs);
       this.judgeComStatus();
     },
     //判断比赛状态
     async judgeComStatus() {
-      console.log("参加的比赛", this.joinComs);
       for (let com of this.joinComs) {
-        console.log("参赛记录", com);
         if (com.comId == this.$store.getters.getCompetition.comId) {
           this.active = 2;
           const { data: res } = await this.$http.get(
             "process/getreceivestate?recordId=" + com.recordId
           );
-          console.log("团队接受邀请情况返回信息", res);
           this.teaReceiveState = res.teacher;
           this.stuReceiveState = res.student;
           this.teamState = res.state;
@@ -210,7 +206,6 @@ export default {
         invitestu: this.teamInforForm.stuArray,
       });
       this.active++;
-      console.log("发送团队邀请后返回信息", res);
     },
     toFrontPage() {
       this.$router.push("/frontPage");
@@ -218,27 +213,22 @@ export default {
     },
     getPersonalInfor() {
       this.personInforForm = this.$store.getters.getUser;
-      console.log("个人信息表单", this.personInforForm);
     },
     //获取所有老师
     async getAllTeachers() {
       const { data: res } = await this.$http.get("user/getteacher");
       this.teachers = res.data;
-      console.log("所有老师", this.teachers);
-      console.log("个人信息", this.$store.getters.getUser);
     },
     //获取所有学生
     async getAllStus() {
       const { data: res } = await this.$http.get("user/getstudent");
       this.stus = res.data;
-      console.log("没删除前所有学生", res.data);
       for (let i = 0; i < this.stus.length; i++) {
         if (this.stus[i].stuId == this.$store.getters.getUser.userId) {
           this.stus.splice(i, 1);
           break;
         }
       }
-      console.log("删除后所有学生", this.stus);
     },
   },
 };

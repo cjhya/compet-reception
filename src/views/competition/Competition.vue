@@ -1,96 +1,163 @@
 <template>
   <div>
-    <el-carousel height="300px">
+    <el-carousel height="350px">
       <el-carousel-item
-        v-for="item in pics"
-        :key="item.id"
+        v-for="item in recomComs"
+        :key="item.comId"
         style="text-align: center"
       >
-        <el-image :src="item.path" style="width: 100%; height: 100%"></el-image>
+        <el-image
+          :src="item.picturepath"
+          style="width: 100%; height: 100%"
+        ></el-image>
       </el-carousel-item>
     </el-carousel>
-    <div
-      style="width: 60%; border: 1px solid #e6e6e6; margin: 10px 0 10px 40px"
-    >
-      <el-row v-for="aut1 in classList" :key="aut1.natureId">
-        <!-- 渲染一级分类 -->
-        <el-col :span="3" style="text-align: right">
-          <el-tag>{{ aut1.natureName }}</el-tag>
-        </el-col>
-        <!-- 渲染二级分类 -->
-        <el-col :span="21" bdright>
-          <el-tag
-            v-for="aut2 in aut1.children"
-            :key="aut2.subjectId"
-            :class="{ act: aut2.subjectName == activeSubjectName }"
-            @click="getCompets(aut2.subjectId, aut2.subjectName)"
-          >
-            {{ aut2.subjectName }}</el-tag
-          >
-        </el-col>
-      </el-row>
+    <div style="display: flex">
+      <div style="flex: 4; margin-top: 10px">
+        <div
+          style="
+            width: 90%;
+            border: 1px solid #e6e6e6;
+            margin: 10px 0 10px 40px;
+          "
+        >
+          <el-row v-for="aut1 in classList" :key="aut1.natureId">
+            <!-- 渲染一级分类 -->
+            <el-col :span="3" style="text-align: right">
+              <el-tag style="font-size: 14px; color: #7f8792">{{
+                aut1.natureName
+              }}</el-tag>
+            </el-col>
+            <!-- 渲染二级分类 -->
+            <el-col :span="21" bdright>
+              <el-tag
+                v-for="aut2 in aut1.children"
+                :key="aut2.subjectId"
+                :class="{ act: aut2.subjectName == activeSubjectName }"
+                @click="getCompets(aut2.subjectId, aut2.subjectName)"
+                style="font-size: 14px; color: #666666"
+              >
+                {{ aut2.subjectName }}</el-tag
+              >
+            </el-col>
+          </el-row>
 
-      <el-row v-for="aut1 in levels" :key="aut1.name">
-        <!-- 渲染一级分类 -->
-        <el-col :span="3" style="text-align: right">
-          <el-tag>{{ aut1.name }}</el-tag>
-        </el-col>
-        <!-- 渲染二级分类 -->
-        <el-col :span="21" bdright>
-          <el-tag
-            v-for="aut2 in aut1.children"
-            :key="aut2.levelId"
-            :class="{ act: aut2.levelName == activeLevel }"
-            @click="getCompets2(aut2.levelName)"
-          >
-            {{ aut2.levelName }}</el-tag
-          >
-        </el-col>
-      </el-row>
-    </div>
-    <div v-for="item in compets" :key="item.comId">
-      <el-card
-        style="
-          width: 60%;
-          margin: 10px 0 10px 40px;
-          padding: 10px;
-          box-sizing: border-box;
-        "
-      >
-        <div style="float: left">
-          <h1 style="margin: 0">
-            <span style="font-size: 15px; color: #22bfa7">{{
-              item.state
-            }}</span>
-            {{ item.comName }}
-          </h1>
-          <p>主办方 {{ item.absComHost }}</p>
-          <p>竞赛级别 {{ item.absComLevel }}</p>
-          <p style="font-size: 5px">
-            报名时间 {{ item.comLoginstarttime }} ~ {{ item.comLoginendtime }}
-          </p>
-          <p style="font-size: 5px">
-            比赛时间 {{ item.comDostarttime }} ~ {{ item.comDoendtime }}
-          </p>
+          <el-row v-for="aut1 in levels" :key="aut1.name">
+            <!-- 渲染一级分类 -->
+            <el-col :span="3" style="text-align: right">
+              <el-tag style="font-size: 14px; color: #7f8792">{{
+                aut1.name
+              }}</el-tag>
+            </el-col>
+            <!-- 渲染二级分类 -->
+            <el-col :span="21" bdright>
+              <el-tag
+                v-for="aut2 in aut1.children"
+                :key="aut2.levelId"
+                :class="{ act: aut2.levelName == activeLevel }"
+                @click="getCompets2(aut2.levelName)"
+                style="font-size: 14px; color: #666666"
+              >
+                {{ aut2.levelName }}</el-tag
+              >
+            </el-col>
+          </el-row>
         </div>
-        <div style="float: right; text-align: right">
-          <el-button
-            @click="sighUp(item)"
-            :disabled="
-              item.signUpText == '报名请登录' ||
-              item.signUpText == '已报名' ||
-              item.signUpText == '报名未开始' ||
-              $store.getters.getUser.roleName == '老师' ||
-              $store.getters.getUser.roleName == '管理员'
+        <div v-for="item in compets" :key="item.comId">
+          <el-card
+            style="
+              width: 90%;
+              margin: 10px 0 10px 40px;
+              padding: 10px;
+              box-sizing: border-box;
             "
-            >{{ item.signUpText }}</el-button
           >
-          <h2>距离报名{{ item.statusText }}还有{{ item.remain }}天</h2>
-          <span @click="toComInfor(item)"
-            >竞赛详情<i class="el-icon-arrow-right"></i
-          ></span>
+            <div style="float: left">
+              <h1 style="margin: 0; font-size: 20px">
+                <span style="font-size: 14px; color: #22bfa7">{{
+                  item.state
+                }}</span>
+                {{ item.comName }}
+              </h1>
+              <p style="font-size: 14px; color: #aaaaaa">
+                主办方 {{ item.absComHost }}
+              </p>
+              <p style="font-size: 14px; color: #aaaaaa">
+                竞赛级别 {{ item.absComLevel }}
+              </p>
+              <p style="font-size: 14px; color: #aaaaaa; margin: 0">
+                报名时间 {{ item.comLoginstarttime }} ~
+                {{ item.comLoginendtime }}
+              </p>
+              <p style="font-size: 14px; color: #aaaaaa; margin: 0">
+                比赛时间 {{ item.comDostarttime }} ~ {{ item.comDoendtime }}
+              </p>
+            </div>
+            <div style="float: right; text-align: right">
+              <el-button
+                style="
+                  background-color: #22bfa7;
+                  color: #ffffff;
+                  width: 160px;
+                  height: 50px;
+                "
+                @click="signUp(item)"
+                :disabled="
+                  (item.signUpText != '正在报名' &&
+                    item.signUpText != '待支付') ||
+                  $store.getters.getUser.roleName == '老师' ||
+                  $store.getters.getUser.roleName == '管理员'
+                "
+                v-if="item.state == '正在报名'"
+                >{{ item.signUpText }}</el-button
+              >
+              <p
+                style="font-size: 14px; color: #666666"
+                v-if="item.state == '正在报名' && item.remain&gt;=0"
+              >
+                距离报名截止还有{{ item.remain }}天
+              </p>
+              <p @click="toComInfor(item)" style="color: #666666">
+                <el-link
+                  :underline="false"
+                  :class="{ isSignText: item.state != '正在报名' }"
+                  >竞赛详情<i class="el-icon-arrow-right"></i
+                ></el-link>
+              </p>
+            </div>
+          </el-card>
         </div>
-      </el-card>
+      </div>
+      <div style="flex: 1">
+        <div
+          class="toplist"
+          style="border: 1px solid #e6e6e6; margin-top: 20px; width: 80%"
+        >
+          <header class="t-header">
+            <h1
+              class="t-h-name"
+              style="color: #31363f; font-size: 18px; margin: 0 0 0 10px"
+            >
+              推荐竞赛排行榜
+            </h1>
+          </header>
+          <div
+            v-for="(item, index) in recomComs"
+            :key="index"
+            class="toplist-item"
+            @click="toComInfor(item)"
+          >
+            <i class="t-i-number" style="margin: 0 2px 0 0; font-size: 14px">{{
+              index + 1
+            }}</i>
+            <div class="t-i-tilte">
+              <span style="font-size: 12px; color: #31363f">{{
+                item.comName
+              }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -100,24 +167,6 @@ export default {
   name: "Competition",
   data() {
     return {
-      pics: [
-        {
-          path: "https://publicqn.saikr.com/2023/03/24/contest641d6c4d3196f7.848381221679649873731.png?imageView2/2/w/1080",
-          id: "1",
-        },
-        {
-          path: "https://publicqn.saikr.com/2023/04/03/contest642a9f8573b037.630061001680514981170.png?imageView2/2/w/1080",
-          id: "2",
-        },
-        {
-          path: "https://publicqn.saikr.com/2023/02/03/contest63dc75d9e66901.304693181675393439551.png?imageView2/2/w/1080",
-          id: "3",
-        },
-        {
-          path: "https://publicqn.saikr.com/2023/04/12/contest64366057734cc7.485133281681285248785.png?imageView2/2/w/1080",
-          id: "4",
-        },
-      ],
       classList: [],
       activeSubjectId: "",
       activeSubjectName: "全部",
@@ -133,35 +182,39 @@ export default {
         },
       ],
       activeLevel: "全部",
-      compets: [
-        {
-          comId: "1",
-          state: "正在报名",
-          comName: "第一届比赛",
-          hostName: "主办方1",
-          loginStart: "开始时间1",
-          loginEnd: "结束时间1",
-        },
-        {
-          comId: "2",
-          state: "已经结束",
-          comName: "第二届比赛",
-          hostName: "主办方2",
-          loginStart: "开始时间2",
-          loginEnd: "结束时间2",
-        },
-      ],
+      compets: [],
+      recomComs: [],
+      joinComs: [],
     };
   },
   created() {
     //获取所有竞赛分类
     this.getClassList();
-    //初始化获取所有竞赛数据
-    this.getCompets2("全部");
+    this.getRecommendComs();
+    if (this.$store.getters.getUser.userId != undefined) {
+      this.getMyJoinComs();
+    } else {
+      this.getCompets2("全部");
+    }
   },
   methods: {
-    //判断某一竞赛报名状态
-
+    //获取我参加的竞赛
+    async getMyJoinComs() {
+      const { data: res } = await this.$http.get(
+        "competition/getmyparticipant?userId=" +
+          this.$store.getters.getUser.userId
+      );
+      this.joinComs = res.data;
+      console.log("我参加的竞赛", this.joinComs);
+      this.getCompets2("全部");
+    },
+    //获取排行榜
+    async getRecommendComs() {
+      const { data: res } = await this.$http.get(
+        "competition/getrecommend?userId=" + this.$store.getters.getUser.userId
+      );
+      this.recomComs = res.data;
+    },
     //获取所有竞赛分类
     async getClassList() {
       const { data: res } = await this.$http.get("subject/getsubject");
@@ -188,21 +241,24 @@ export default {
         if (comp.state == "正在报名") {
           if (this.$store.getters.getUser.userId == undefined) {
             comp.signUpText = "报名请登录";
-          } else if (1) {
-            //没有报名该竞赛
-            comp.signUpText = "马上报名";
+            continue;
           } else {
-            //报名该竞赛
-            comp.sighUpText = "已报名";
+            for (let joinCom of this.joinComs) {
+              if (joinCom.comId == comp.comId) {
+                if (joinCom.state == "待支付") {
+                  comp.signUpText = "待支付";
+                  break;
+                } else {
+                  comp.signUpText = "已报名";
+                  break;
+                }
+              }
+            }
+            comp.signUpText = "马上报名";
           }
-        } else if (comp.state == "未开始") {
-          comp.signUpText = "报名未开始";
         }
-        if (comp.remain < 0) {
-          comp.remain = -comp.remain;
-          comp.statusText = "开始";
-        } else {
-          comp.statusText = "截止";
+        if (comp["signUpText"] == undefined) {
+          comp.signUpText = comp.state;
         }
       }
     },
@@ -215,28 +271,27 @@ export default {
           "&level=" +
           (this.activeLevel == "全部" ? "" : this.activeLevel)
       );
-      console.log("返回信息", res);
       this.compets = res.data;
       for (let comp of this.compets) {
         if (comp.state == "正在报名") {
           if (this.$store.getters.getUser.userId == undefined) {
             comp.signUpText = "报名请登录";
-          } else if (1) {
-            //没有报名该竞赛
-            comp.signUpText = "马上报名";
+            continue;
           } else {
-            //报名该竞赛
-            comp.sighUpText = "已报名";
+            for (let joinCom of this.joinComs) {
+              if (joinCom.comId == comp.comId) {
+                if (joinCom.state == "待支付") {
+                  comp.signUpText = "待支付";
+                  break;
+                } else {
+                  comp.signUpText = "已报名";
+                  break;
+                }
+              }
+            }
           }
-        } else if (comp.state == "未开始") {
-          comp.signUpText = "报名未开始";
         }
-        if (comp.remain < 0) {
-          comp.remain = -comp.remain;
-          comp.statusText = "开始";
-        } else {
-          comp.statusText = "截止";
-        }
+        if (comp.signUpText == undefined) comp.signUpText = comp.state;
       }
     },
     //进入详细竞赛信息
@@ -249,14 +304,12 @@ export default {
       competition.comDostarttime = competition.comLoginstarttime.substr(0, 10);
       competition.comDoendtime = competition.comLoginstarttime.substr(0, 10);
       this.$store.dispatch("asyncUpdateCompetition", competition);
-      console.log("竞赛信息", this.$store.getters.getCompetition);
       this.$router.push("/comInfor");
       this.$emit("changeInd");
     },
     //报名按钮
-    sighUp(competition) {
+    signUp(competition) {
       this.$store.dispatch("asyncUpdateCompetition", competition);
-      console.log("竞赛信息", this.$store.getters.getCompetition);
       if (competition.comType == "个人赛") {
         this.$router.push("/personalSignUp");
       } else {
@@ -269,6 +322,10 @@ export default {
 </script>
 
 <style scoped>
+.isSignText {
+  font-size: 22px;
+}
+
 .el-tag {
   background-color: #fff;
   border-color: #fff;
@@ -283,5 +340,55 @@ export default {
   font-weight: 300;
   background: #e7fffb;
   border-radius: 2px;
+}
+
+.toplist {
+  width: 100%;
+}
+.t-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+.t-h-name {
+  font-size: 18px;
+}
+.more {
+  padding: 2px 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.toplist-item {
+  justify-content: space-around;
+  width: 100%;
+  padding: 8px 0;
+}
+
+.t-i-number {
+  display: inline-block;
+  width: 10%;
+  height: 20px;
+  margin-right: 5%;
+  font-size: 14px;
+  color: #999;
+  text-align: center;
+}
+
+.t-i-tilte {
+  display: inline-block;
+  width: 85%;
+  font-size: 14px;
+  /* 垂直对齐  父级要变*/
+  vertical-align: middle;
+}
+.t-i-tilte span {
+  /* 两行显示 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+  color: #4d4d4d;
 }
 </style>

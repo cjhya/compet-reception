@@ -1,5 +1,5 @@
 <template>
-  <div style="margin: 10px 40px">
+  <div style="margin: 10px 200px">
     <el-card>
       <div slot="header">
         <span>{{ $store.getters.getCompetition.comName }}</span>
@@ -35,7 +35,7 @@
           <el-input v-model="personInforForm.phone"></el-input>
         </el-form-item>
         <div style="float: right; margin-bottom: 10px">
-          <el-button @click="active++">下一步</el-button>
+          <el-button @click="compSignUp">下一步</el-button>
         </div>
       </el-form>
 
@@ -44,7 +44,10 @@
           <div>
             <h2>你需缴费XX元，是否</h2>
             <el-link
-              href="https://4wr6987968.yicp.fun/paymoney/dingdan"
+              :href="
+                'https://4wr6987968.yicp.fun/paymoney/dingdan?recordId' +
+                recordId
+              "
               target="_blank"
               type="primary"
               style="font-size: 24px"
@@ -54,7 +57,7 @@
 
           <div style="float: right; margin: 10px 0">
             <el-button @click="active--">返回上一步</el-button>
-            <el-button @click="compSignUp">下一步</el-button>
+            <el-button @click="active++">下一步</el-button>
           </div>
         </div>
       </div>
@@ -76,12 +79,39 @@ export default {
     return {
       active: 0,
       personInforForm: {},
+      joinComs: [],
+      recordId: 8,
     };
   },
   created() {
     this.getPersonalInfor();
+    this.getMyJoinComs();
   },
   methods: {
+    //获取我参加的竞赛
+    async getMyJoinComs() {
+      const { data: res } = await this.$http.get(
+        "competition/getmyparticipant?userId=" +
+          this.$store.getters.getUser.userId
+      );
+      this.joinComs = res.data;
+      this.judgeComStatus();
+    },
+    //判断比赛状态
+    async judgeComStatus() {
+      for (let com of this.joinComs) {
+        if (com.comId == this.$store.getters.getCompetition.comId) {
+          if (com.state == "待支付") {
+            this.active = 1;
+            return;
+          } else {
+            this.active = 2;
+            return;
+          }
+        }
+      }
+      this.active = 0;
+    },
     //完成报名
     async compSignUp() {
       const { data: res } = await this.$http.post("competition/addrecord", {
@@ -92,11 +122,9 @@ export default {
         stuArray: "",
       });
       this.active++;
-      console.log("添加记录返回信息", res);
     },
     getPersonalInfor() {
       this.personInforForm = this.$store.getters.getUser;
-      console.log("个人信息表单", this.personInforForm);
     },
     toFrontPage() {
       this.$router.push("/frontPage");

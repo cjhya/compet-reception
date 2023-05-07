@@ -2,40 +2,33 @@
   <div>
     <el-row style="margin: 0 40px; position: relative">
       <el-col
-        :span="4"
+        :span="2"
+        :offset="1"
         style="
           position: fixed;
           text-align: center;
           border: 1px solid #e6e6e6;
           height: 100%;
+          font-size:14px
         "
       >
-        <div style="width: 100%; height: 50px; line-height: 50px">
-          <i class="el-icon-s-promotion"></i>
-          消息中心
-        </div>
-        <el-divider></el-divider>
         <div
-          style="width: 100%; height: 50px; line-height: 50px"
+          style="width: 100%; height: 40px; line-height: 40px"
           @click="toSysNotice"
         >
           <i class="el-icon-star-on"></i>
           系统通知
         </div>
         <div
-          style="width: 100%; height: 50px; line-height: 50px"
+          style="width: 100%; height: 40px; line-height: 40px"
           @click="toMyMessage"
         >
           <i class="el-icon-star-on"></i>
           我的消息
         </div>
-        <!-- <el-menu :default-active="activeIndex" :router="true">
-          <el-menu-item index="/sysNotice">系统通知</el-menu-item>
-          <el-menu-item index="/myMessage">我的消息</el-menu-item>
-        </el-menu> -->
       </el-col>
-      <el-col :span="18" :offset="6">
-        <h1>{{ title }}</h1>
+      <el-col :span="19" :offset="4">
+        <h1 style="font-size:15px;color:#666666">{{ title }}</h1>
         <router-view></router-view>
       </el-col>
     </el-row>

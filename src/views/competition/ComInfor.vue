@@ -1,7 +1,10 @@
 <template>
   <div>
     <div style="text-align: center; margin: 0 40px">
-      <el-image style="width: 100%" :src="competition.picturepath"></el-image>
+      <el-image
+        style="width: 100%; height: 380px"
+        :src="competition.picturepath"
+      ></el-image>
     </div>
     <div style="margin: 0 40px">
       <el-row type="flex" justify="space-between">
@@ -11,31 +14,51 @@
             mode="horizontal"
             :router="true"
           >
-            <el-menu-item index="/comConInfor">竞赛信息</el-menu-item>
-            <el-menu-item index="/comAnn">竞赛公告</el-menu-item>
+            <el-menu-item
+              index="/comConInfor"
+              style="font-size: 18px; color: #666666; font-weight: 600"
+              >竞赛信息</el-menu-item
+            >
+            <el-menu-item
+              index="/comAnn"
+              style="font-size: 18px; color: #666666; font-weight: 600"
+              >竞赛公告</el-menu-item
+            >
+            <el-menu-item
+              index="/excellentWork"
+              style="font-size: 18px; color: #666666; font-weight: 600"
+              >优秀作品</el-menu-item
+            >
           </el-menu></el-col
         >
-        <el-col :span="6" style="border-bottom: solid 1px #e6e6e6"
-          ><el-button
-            style="float: right"
-            :disabled="
-              competition.signUpText == '报名请登录' ||
-              competition.signUpText == '已报名' ||
-              competition.sighUpText == '报名未开始' ||
-              $store.getters.getUser.roleName == '老师' ||
-              $store.getters.getUser.roleName == '管理员'
-            "
-            >{{ competition.signUpText }}</el-button
-          >
+        <el-col :span="6" style="border-bottom: solid 1px #e6e6e6">
           <div>
-            <span>报名时间 距离报名截止还有{{ competition.remain }}天</span
-            ><span
-              >{{ competition.comLoginstarttime }}-{{
-                competition.comLoginendtime
-              }}</span
+            <el-button
+              style="float: right; background: #22bfa7; color: #fff"
+              :disabled="
+                (competition.signUpText != '正在报名' &&
+                  competition.signUpText != '待支付') ||
+                $store.getters.getUser.roleName == '老师' ||
+                $store.getters.getUser.roleName == '管理员'
+              "
+              v-if="competition.state == '正在报名'"
+              >{{ competition.signUpText }}</el-button
             >
-          </div></el-col
-        >
+            <div>
+              <div style="font-size: 14px; color: #666666; font-weight: 600">
+                报名时间
+                <span v-if="competition.state == '正在报名'"
+                  >距离报名截止还有{{ competition.remain }}天</span
+                >
+              </div>
+              <div style="font-size: 14px; color: #878787">
+                {{ competition.comLoginstarttime }}-{{
+                  competition.comLoginendtime
+                }}
+              </div>
+            </div>
+          </div>
+        </el-col>
       </el-row>
     </div>
     <router-view></router-view>
@@ -48,12 +71,12 @@ export default {
   data() {
     return {
       competition: {},
-      activeIndex: "",
+      activeIndex: "/comConInfor",
     };
   },
   created() {
     this.competition = this.$store.getters.getCompetition;
-    console.log("获取该竞赛信息", this.competition);
+    console.log("竞赛信息", this.competition);
   },
 };
 </script>

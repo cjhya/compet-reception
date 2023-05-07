@@ -8,9 +8,19 @@
             mode="horizontal"
             :router="true"
           >
-            <el-menu-item index="/frontPage">首页</el-menu-item>
-            <el-menu-item index="/competition">竞赛</el-menu-item>
-            <el-menu-item index="/forum">论坛</el-menu-item>
+            <el-menu-item
+              index="/frontPage"
+              style="font-size: 16px; color: #666666"
+              >首页</el-menu-item
+            >
+            <el-menu-item
+              index="/competition"
+              style="font-size: 16px; color: #666666"
+              >竞赛</el-menu-item
+            >
+            <el-menu-item index="/forum" style="font-size: 16px; color: #666666"
+              >论坛</el-menu-item
+            >
           </el-menu></el-col
         >
         <el-col :span="6"
@@ -23,13 +33,16 @@
           </el-input
         ></el-col>
         <el-col :span="6">
-          <span v-show="chang" style="float: right" @click="toLoginRegister"
-            >注册/登录</span
+          <span
+            v-show="chang"
+            style="float: right; color: #31363f; font-size: 14px"
+            @click="toLoginRegister"
+            >注册 / 登录</span
           >
-
+          <!-- :src="require('../assets/ava.jpg')" -->
           <el-dropdown v-show="!chang" style="float: right; margin-left: 10px">
             <el-avatar
-              :src="require('../assets/ava.jpg')"
+              :src="$store.getters.getUser.headpicture"
               style="display: inline-box; vertical-align: middle"
             ></el-avatar>
             <el-dropdown-menu slot="dropdown">
@@ -60,17 +73,19 @@
           </span>
 
           <el-dropdown style="float: right; margin-right: 10px">
-            <el-button :disabled="$store.getters.getUser.roleId == undefined"
-              >发布<i class="el-icon-s-promotion"></i
-            ></el-button>
+            <el-button
+              :disabled="$store.getters.getUser.roleId == undefined"
+              style="border-color: #00d6b5; color: #00d6b5"
+              ><i class="el-icon-s-promotion"></i>发布</el-button
+            >
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
                 :disabled="$store.getters.getUser.roleName != '老师'"
                 @click.native="toPostCompetition"
-                >竞赛</el-dropdown-item
+                ><i class="el-icon-trophy"></i>竞赛</el-dropdown-item
               >
               <el-dropdown-item @click.native="toPostArticle"
-                >文章</el-dropdown-item
+                ><i class="el-icon-postcard"></i>文章</el-dropdown-item
               >
             </el-dropdown-menu>
           </el-dropdown>
@@ -111,7 +126,7 @@ export default {
       this.$store.dispatch("asyncUpdateSearchKey", this.wordkey);
       this.$router.push("/searchRes");
       this.activeIndex = "/searchRes";
-      console.log("当前激活菜单", this.activeIndex);
+      this.wordkey = "";
     },
     judgeIsLogin() {
       if (this.$store.getters.getUser.userId) {

@@ -1,6 +1,32 @@
 <template>
   <div style="width: 60%; margin: 30px auto">
     <el-form :model="personInfor" label-width="80px" size="medium">
+      <el-form-item label="上传头像">
+        <el-upload
+          class="avatar-uploader"
+          action="#"
+          :show-file-list="false"
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload"
+          :http-request="httpRequest"
+          ref="uploadAva"
+          :auto-upload="false"
+        >
+          <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+          <i
+            v-else
+            class="el-icon-plus"
+            style="
+              font-size: 28px;
+              color: #8c939d;
+              width: 100px;
+              height: 100px;
+              line-height: 100px;
+              text-align: center;
+            "
+          ></i>
+        </el-upload>
+      </el-form-item>
       <el-form-item label="名字">
         <el-input v-model="personInfor.name"></el-input>
       </el-form-item>
@@ -45,16 +71,38 @@ export default {
   name: "PersonInfor",
   data() {
     return {
+      avaFile: "",
+      imageUrl: "",
       personInfor: {},
     };
   },
   created() {
     this.personInfor = this.$store.getters.getUser;
+    console.log("个人信息", this.personInfor);
   },
   methods: {
+    httpRequest(param) {
+      this.avaFile = param.file;
+    },
+    handleAvatarSuccess(res, file) {
+      this.imageUrl = URL.createObjectURL(file.raw);
+      console.log("图片路径", this.imageUrl);
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === "image/jpeg";
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        this.$message.error("上传头像图片只能是 JPG 格式!");
+      }
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return isJPG && isLt2M;
+    },
     async editInfor() {
       const { data: res } = await this.$http.post("user/updateuser", {
-        userid: this.personInfor.userId,
+        userId: this.personInfor.userId,
         roleId: this.personInfor.roleId,
         userName: this.personInfor.name,
         userAccount: this.personInfor.account,
@@ -62,11 +110,42 @@ export default {
         userSex: this.personInfor.sex,
         userAge: this.personInfor.age,
         userPhone: this.personInfor.phone,
+        college: this.personInfor.college,
+        school: this.personInfor.school,
       });
-      console.log("修改信息返回信息",res)
+      console.log("修改信息返回信息", res);
+      this.uploadAvater();
+    },
+    async uploadAvater() {
+      this.$refs.uploadAva.submit();
+      let fd = new FormData();
+      fd.append("userId", this.$store.getters.getUser.userId);
+      fd.append("headpicture", this.avaFile);
+
+      const { data: res } = await this.$http.post("user/uploadheadpicture", fd);
+      console.log("上传头像返回信息", res);
+      this.$store.dispatch("asyncUpdateUser", res.data);
+      this.$router.push("/frontPage");
+      this.$emit("changeInd", "/frontPage");
     },
   },
 };
 </script>
 
-<style></style>
+<style scoped>
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar {
+  width: 100px;
+  height: 100px;
+  display: block;
+}
+</style>

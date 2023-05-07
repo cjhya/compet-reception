@@ -1,15 +1,40 @@
 <template>
   <div>
-    <h1 style="text-align: center">{{ note.noteTitle }}</h1>
-    <div v-html="note.distributeText" style="margin: 5px 40px"></div>
-    <el-card style="width: 500px; margin: 0 auto">
+    <h2
+      style="
+        font-size: 22px;
+        color: #666666;
+        font-weight: 600;
+        border-left: 4px solid #22bfa7;
+        padding-left: 10px;
+        margin:50px
+      "
+    >
+      公告信息
+    </h2>
+    <h1
+      style="
+        text-align: center;
+        font-size: 40px;
+        color: #f1f1f1;
+        background: #333;
+        padding: 50px;
+      "
+    >
+      {{ note.noteTitle }}
+    </h1>
+    <div
+      v-html="note.distributeText"
+      style="margin: 5px 40px; font-size: 18px; color: #666666;padding:20px 50px"
+    ></div>
+    <el-card style="width: 600px; margin: 30px auto">
       <div slot="header" class="clearfix">
-        <span>附件列表</span>
+        <span style="font-size:22px;color:#666666;font-weight:600">附件列表</span>
       </div>
       <div
         v-for="item in note.appendix"
         :key="item.appendixId"
-        style="font-size: 20px; margin: 10px"
+        style="font-size: 20px; margin: 20px"
       >
         <a
           :href="
@@ -33,7 +58,7 @@ export default {
   },
   created() {
     this.note = this.$store.getters.getNote;
-    console.log("得到的公告信息", this.note.appendix);
+    console.log("公告",this.note)
   },
 };
 </script>

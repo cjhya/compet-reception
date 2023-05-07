@@ -1,12 +1,28 @@
 <template>
   <div style="width: 60%; margin: 0 40px">
-    <div v-for="item in notes" :key="item.noteId">
-      <h1 @click="toConNote(item)">{{ item.noteTitle }}</h1>
+    <h2
+      style="
+        font-size: 22px;
+        color: #666666;
+        font-weight: 600;
+        border-left: 4px solid #22bfa7;
+        padding-left: 10px;
+      "
+    >
+      竞赛公告
+    </h2>
+    <div v-for="item in notes" :key="item.noteId" @click="toConNote(item)" style="margin:10px 0">
+      <h1 style="font-size: 18px; color: #262626">{{ item.noteTitle }}</h1>
       <div
         v-html="item.distributeText"
-        style="overflow:hidden;white-space: nowrap; text-overflow: ellipsis"
+        style="
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          font-size: 13px;
+        "
       ></div>
-      <p>{{ item.distributeTime }}</p>
+      <p style="font-size: 12px; color: #aaaaaa">{{ item.distributeTime }}</p>
     </div>
   </div>
 </template>
@@ -28,12 +44,10 @@ export default {
         "note/getnote?absComId=" + this.$store.getters.getCompetition.absComId
       );
       this.notes = res.data;
-      console.log("得到的公告列表", this.notes);
     },
     toConNote(note) {
-        console.log("选择的公告",note)
-        this.$store.dispatch("asyncUpdateNote",note)
-        this.$router.push("/comConAnn")
+      this.$store.dispatch("asyncUpdateNote", note);
+      this.$router.push("/comConAnn");
     },
   },
 };

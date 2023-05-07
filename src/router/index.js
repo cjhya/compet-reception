@@ -20,6 +20,8 @@ import SearchRes from "../views/secondaryPage/SearchRes.vue";
 import PostCompetition from "../views/secondaryPage/PostCompetition.vue";
 import MyCompetition from "../views/myCompetition/MyCompetition.vue";
 import PersonInfor from "../views/personInfor/PersonInfor.vue"
+import JoinCompetition from "../views/myCompetition/JoinCompetition.vue"
+import ExcellentWork from "../views/competition/ExcellentWork.vue"
 
 Vue.use(Router);
 
@@ -57,6 +59,7 @@ const router = new Router({
           children: [
             { path: "/comConInfor", component: ComConInfor },
             { path: "/comAnn", component: ComAnn },
+            { path: "/excellentWork", component: ExcellentWork },
           ],
         },
         { path: "/comConAnn", component: ComConAnn },
@@ -66,6 +69,7 @@ const router = new Router({
         { path: "/searchRes", component: SearchRes },
         { path: "/myCompetition", component: MyCompetition },
         { path: "/personInfor", component: PersonInfor },
+        { path: "/joinCompetition", component: JoinCompetition },
       ],
     },
   ],

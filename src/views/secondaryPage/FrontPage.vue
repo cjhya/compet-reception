@@ -1,22 +1,22 @@
 <template>
   <div>
-    <el-carousel height="300px">
+    <el-carousel height="350px">
       <el-carousel-item
-        v-for="item in pics"
-        :key="item.id"
+        v-for="item in comHot"
+        :key="item.comId"
         style="text-align: center"
       >
-        <el-image :src="item.path" style="width: 100%; height: 100%"></el-image>
+        <el-image
+          :src="item.picturepath"
+          style="width: 100%; height: 100%"
+        ></el-image>
       </el-carousel-item>
     </el-carousel>
     <el-card style="margin: 10px 40px">
       <div slot="header" class="clearfix">
-        <span>热门竞赛</span>
-        <el-button
-          style="float: right; padding: 3px 0"
-          type="text"
-          @click="toCompet"
-          >查看更多</el-button
+        <h3 style="font-size: 22px; margin: 0">热门竞赛</h3>
+        <el-link style="float: right" @click="toCompet" type="primary"
+          >查看更多</el-link
         >
       </div>
       <div>
@@ -25,15 +25,17 @@
             :span="5"
             v-for="item in comHot"
             :key="item.comId"
-            style="margin: 5px 10px 0 20px"
+            style="margin: 10px 10px 0 20px"
             @click.native="toComInfor(item)"
           >
             <div>
               <el-image :src="item.picturepath"></el-image>
-              <p>
+              <p style="font-size: 14px">
                 <el-tag size="mini">{{ item.state }}</el-tag> {{ item.comName }}
               </p>
-              <p>主办方: {{ item.absComHost }}</p>
+              <p style="font-size: 12px; color: #aaaaaa">
+                主办方: {{ item.absComHost }}
+              </p>
             </div>
           </el-col>
         </el-row>
@@ -47,32 +49,26 @@ export default {
   name: "FrontPage",
   data() {
     return {
-      pics: [
-        {
-          path: "https://publicqn.saikr.com/2023/03/24/contest641d6c4d3196f7.848381221679649873731.png?imageView2/2/w/1080",
-          id: "1",
-        },
-        {
-          path: "https://publicqn.saikr.com/2023/04/03/contest642a9f8573b037.630061001680514981170.png?imageView2/2/w/1080",
-          id: "2",
-        },
-        {
-          path: "https://publicqn.saikr.com/2023/02/03/contest63dc75d9e66901.304693181675393439551.png?imageView2/2/w/1080",
-          id: "3",
-        },
-        {
-          path: "https://publicqn.saikr.com/2023/04/12/contest64366057734cc7.485133281681285248785.png?imageView2/2/w/1080",
-          id: "4",
-        },
-      ],
       comHot: [],
+      joinComs: [],
     };
   },
   created() {
     //获取首页热点竞赛
     this.getAllComHot();
+    if (this.$store.getters.getUser.userId != undefined) {
+      this.getMyJoinComs();
+    }
   },
   methods: {
+    //获取我参加的竞赛
+    async getMyJoinComs() {
+      const { data: res } = await this.$http.get(
+        "competition/getmyparticipant?userId=" +
+          this.$store.getters.getUser.userId
+      );
+      this.joinComs = res.data;
+    },
     //进入详细竞赛信息
     toComInfor(competition) {
       competition.comLoginstarttime = competition.comLoginstarttime.substr(
@@ -83,7 +79,6 @@ export default {
       competition.comDostarttime = competition.comLoginstarttime.substr(0, 10);
       competition.comDoendtime = competition.comLoginstarttime.substr(0, 10);
       this.$store.dispatch("asyncUpdateCompetition", competition);
-      console.log("竞赛信息", this.$store.getters.getCompetition);
       this.$router.push("/comInfor");
       this.$emit("changeInd");
     },
@@ -95,23 +90,31 @@ export default {
     async getAllComHot() {
       const { data: res } = await this.$http.get("competition/gethot");
       this.comHot = res.data;
-      console.log("得到热点竞赛", this.comHot);
       for (let comp of this.comHot) {
         if (comp.state == "正在报名") {
           if (this.$store.getters.getUser.userId == undefined) {
             comp.signUpText = "报名请登录";
-          } else if (1) {
-            //没有报名该竞赛
-            comp.signUpText = "马上报名";
+            continue;
           } else {
-            //报名该竞赛
-            comp.sighUpText = "已报名";
+            for(let joinCom of this.joinComs){
+              if(joinCom.comId==comp.comId){
+                comp.sighUpText = "已报名";
+                break;
+              }
+            }
+            comp.sighUpText = "马上报名";
           }
         }
+        if(comp.signUpText=="")
+          comp.signUpText = comp.state;
       }
     },
   },
 };
 </script>
 
-<style></style>
+<style scoped>
+.el-card ::v-deep .el-card__header {
+  padding-bottom: 5px;
+}
+</style>

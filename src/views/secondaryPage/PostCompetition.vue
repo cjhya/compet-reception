@@ -9,6 +9,32 @@
         label-width="100px"
         style="margin: 10px auto; width: 500px"
       >
+        <el-form-item label="上传图片">
+          <el-upload
+            class="avatar-uploader"
+            action="#"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+            :http-request="httpRequest"
+            ref="uploadPic"
+            :auto-upload="false"
+          >
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <i
+              v-else
+              class="el-icon-plus"
+              style="
+                font-size: 28px;
+                color: #8c939d;
+                width: 100px;
+                height: 100px;
+                line-height: 100px;
+                text-align: center;
+              "
+            ></i>
+          </el-upload>
+        </el-form-item>
         <el-form-item label="竞赛大类">
           <el-select v-model="competForm.absComId" placeholder="请选择">
             <el-option
@@ -67,7 +93,7 @@
           </el-date-picker>
         </el-form-item>
       </el-form>
-      <div style="float: right;margin:0 20px 20px 0">
+      <div style="float: right; margin: 0 20px 20px 0">
         <el-button @click="cancel">取消</el-button>
         <el-button type="primary" @click="postCom">发表</el-button>
       </div>
@@ -83,6 +109,8 @@ export default {
       types: [{ type: "个人赛" }, { type: "团队赛" }],
       //可供选择的抽象竞赛
       absComs: [],
+      avaFile: "",
+      imageUrl: "",
       competForm: {
         absComId: "",
         comName: "",
@@ -100,13 +128,39 @@ export default {
     this.competForm.comTeacher = this.$store.getters.getUser.userId;
   },
   methods: {
+    httpRequest(param) {
+      this.avaFile = param.file;
+    },
+    handleAvatarSuccess(res, file) {
+      this.imageUrl = URL.createObjectURL(file.raw);
+    },
+    beforeAvatarUpload(file) {
+      const isJPG = file.type === "image/jpeg";
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isJPG) {
+        this.$message.error("上传头像图片只能是 JPG 格式!");
+      }
+      if (!isLt2M) {
+        this.$message.error("上传头像图片大小不能超过 2MB!");
+      }
+      return isJPG && isLt2M;
+    },
     async postCom() {
-      console.log("具体竞赛表单", this.competForm);
+      this.$refs.uploadPic.submit();
+      let fd = new FormData();
+      // 将data转换为form-data
+      for (let i in this.competForm) {
+        fd.append(i, this.competForm[i]);
+      }
+      fd.append("headpicture", this.avaFile);
+      console.log("参数1",this.competForm,this.avaFile)
+      console.log("发布竞赛参数", fd);
       const { data: res } = await this.$http.post(
         "competition/addcompetition",
-        this.competForm
+        fd
       );
-      console.log("添加竞赛返回信息", res);
+      console.log("发布竞赛返回信息", res);
       this.$router.push("/competition");
       this.$emit("changeIndex", "/competition");
     },
@@ -115,7 +169,6 @@ export default {
         "competition/getcompetitionmeta"
       );
       this.absComs = res.data;
-      console.log("获取的抽象竞赛列表", this.absComs);
     },
     cancel() {
       this.competForm = {
@@ -135,4 +188,20 @@ export default {
 };
 </script>
 
-<style></style>
+<style scoped>
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.avatar-uploader .el-upload:hover {
+  border-color: #409eff;
+}
+.avatar {
+  width: 100px;
+  height: 100px;
+  display: block;
+}
+</style>

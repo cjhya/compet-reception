@@ -35,12 +35,6 @@ export default {
       this.$emit("changeIndex","/frontPage")
     },
     async postArt() {
-      console.log("获取的用户信息", this.$store.getters.getUser);
-      console.log("提交表单", {
-        artName: this.articleForm.name,
-        artContent: this.$refs.contentEditor.html,
-        userId: this.$store.getters.getUser.userId,
-      });
       const { data: res } = await this.$http.post("forum/addarticle", {
         artName: this.articleForm.name,
         artContent: this.$refs.contentEditor.html,
