@@ -32,7 +32,7 @@ export default {
       this.articleForm = { name: "" };
       this.$refs.contentEditor.html = "";
       this.$router.push("/frontPage");
-      this.$emit("changeIndex","/frontPage")
+      this.$emit("changeIndex", "/frontPage");
     },
     async postArt() {
       const { data: res } = await this.$http.post("forum/addarticle", {
@@ -40,6 +40,12 @@ export default {
         artContent: this.$refs.contentEditor.html,
         userId: this.$store.getters.getUser.userId,
       });
+      console.log("发表文章参数", {
+        artName: this.articleForm.name,
+        artContent: this.$refs.contentEditor.html,
+        userId: this.$store.getters.getUser.userId,
+      });
+      console.log("发表文章返回信息", res);
       this.$router.push("/forum");
       this.$emit("changeIndex", "/forum");
     },

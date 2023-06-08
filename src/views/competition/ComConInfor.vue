@@ -16,9 +16,10 @@
         >
           竞赛信息
         </h2>
-        <p style="font-size: 14px; color: #666666">
-          {{ competition.absComIntroduction }}
-        </p>
+        <div
+          style="overflow: hidden"
+          v-html="competition.absComIntroduction"
+        ></div>
         <h2
           style="
             font-size: 22px;

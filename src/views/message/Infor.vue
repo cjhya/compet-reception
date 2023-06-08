@@ -5,11 +5,11 @@
         :span="2"
         :offset="1"
         style="
-          position: fixed;
+          position: absolute;
           text-align: center;
           border: 1px solid #e6e6e6;
           height: 100%;
-          font-size:14px
+          font-size: 14px;
         "
       >
         <div
@@ -28,7 +28,16 @@
         </div>
       </el-col>
       <el-col :span="19" :offset="4">
-        <h1 style="font-size:15px;color:#666666">{{ title }}</h1>
+        <h1
+          style="
+            font-size: 15px;
+            color: #666666;
+            border-left: 4px solid #22bfa7;
+            padding-left: 10px;
+          "
+        >
+          {{ title }}
+        </h1>
         <router-view></router-view>
       </el-col>
     </el-row>

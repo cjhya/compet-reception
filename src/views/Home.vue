@@ -18,7 +18,15 @@
               style="font-size: 16px; color: #666666"
               >竞赛</el-menu-item
             >
-            <el-menu-item index="/forum" style="font-size: 16px; color: #666666"
+            <el-menu-item
+              index="/activity"
+              style="font-size: 16px; color: #666666"
+              >活动</el-menu-item
+            >
+            <el-menu-item
+              index="/forum"
+              style="font-size: 16px; color: #666666"
+              @click.native="changeMyArticle"
               >论坛</el-menu-item
             >
           </el-menu></el-col
@@ -52,6 +60,15 @@
               <el-dropdown-item @click.native="toMyCom"
                 >我的竞赛</el-dropdown-item
               >
+              <el-dropdown-item @click.native="toMyAct"
+                >我的活动</el-dropdown-item
+              >
+              <el-dropdown-item @click.native="toMyArticle"
+                >我的文章</el-dropdown-item
+              >
+              <el-dropdown-item @click.native="switchAccount"
+                >切换账号</el-dropdown-item
+              >
               <el-dropdown-item @click.native="logout"
                 >退出账号</el-dropdown-item
               >
@@ -80,9 +97,17 @@
             >
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item
-                :disabled="$store.getters.getUser.roleName != '老师'"
+                :disabled="
+                  $store.getters.getUser.roleName != '老师' &&
+                  $store.getters.getUser.roleName != '管理员'
+                "
                 @click.native="toPostCompetition"
                 ><i class="el-icon-trophy"></i>竞赛</el-dropdown-item
+              >
+              <el-dropdown-item
+                :disabled="$store.getters.getUser.roleName != '老师'"
+                @click.native="toPostAct"
+                ><i class="el-icon-stopwatch"></i>活动</el-dropdown-item
               >
               <el-dropdown-item @click.native="toPostArticle"
                 ><i class="el-icon-postcard"></i>文章</el-dropdown-item
@@ -113,6 +138,23 @@ export default {
   },
   created() {},
   methods: {
+    toMyAct() {
+      this.$router.push("/myActivity");
+      this.activeIndex = "/myActivity";
+    },
+    toPostAct() {
+      this.$router.push("/postActivity");
+      this.activeIndex = "/postActivity";
+    },
+    changeMyArticle() {
+      this.$store.dispatch("asyncUpdateForum", "全部");
+    },
+    switchAccount() {
+      this.chang = true;
+      this.$store.dispatch("asyncUpdateUser", {});
+      this.$router.push("/loginRegister");
+      this.activeIndex = "/loginRegister";
+    },
     toPersonInfor() {
       this.$router.push("/personInfor");
       this.activeIndex = "/personInfor";
@@ -120,6 +162,11 @@ export default {
     toMyCom() {
       this.$router.push("/myCompetition");
       this.activeIndex = "/myCompetition";
+    },
+    toMyArticle() {
+      this.activeIndex = "";
+      this.$router.push("/forum");
+      this.$store.dispatch("asyncUpdateForum", "我的");
     },
     //回车搜索事件
     search() {
@@ -146,8 +193,13 @@ export default {
       this.activeIndex = "/postArticle";
     },
     toPostCompetition() {
-      this.$router.push("/postCompetition");
-      this.activeIndex = "/postCompetition";
+      if (this.$store.getters.getUser.roleName == "老师") {
+        this.$router.push("/postCompetition");
+        this.activeIndex = "/postCompetition";
+      } else if (this.$store.getters.getUser.roleName == "管理员") {
+        this.$router.push("/postAbsCompetition");
+        this.activeIndex = "/postAbsCompetition";
+      }
     },
     toInfor() {
       this.$router.push("/infor");

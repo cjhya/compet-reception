@@ -3,7 +3,7 @@
     <el-card>
       <el-tabs v-model="activeName" style="padding: 0 20px">
         <el-tab-pane label="我参加的竞赛" name="join">
-          <div v-for="item in joinComs" :key="item.comId">
+          <div v-for="item in joinComs" :key="item.recordId">
             <el-card
               style="
                 width: 90%;
@@ -29,6 +29,9 @@
                   主办方 {{ item.absComHost }}
                 </p>
                 <p style="font-size: 14px; color: #aaaaaa">
+                  比赛类型 {{ item.comType }}
+                </p>
+                <p style="font-size: 14px; color: #aaaaaa">
                   竞赛级别 {{ item.absComLevel }}
                 </p>
                 <p style="font-size: 14px; color: #aaaaaa; margin: 0">
@@ -48,7 +51,12 @@
                     height: 50px;
                   "
                   @click="joinCom(item)"
-                  v-if="item.state == '进行中'"
+                  v-if="
+                    (item.state == '进行中' && item.comType == '个人赛') ||
+                    (item.state == '进行中' &&
+                      item.comType == '团队赛' &&
+                      item.captial == $store.getters.getUser.name)
+                  "
                   >参加比赛</el-button
                 >
                 <p @click="toComInfor(item)" style="color: #666666">
@@ -57,6 +65,14 @@
                     :class="{ isSignText: item.state != '正在报名' }"
                     >竞赛详情<i class="el-icon-arrow-right"></i
                   ></el-link>
+                </p>
+                <p style="color: #aaaaaa">
+                  比赛成绩
+                  <span style="color: #22bfa7">{{ item.grade }}</span>
+                </p>
+                <p style="color: #aaaaaa">
+                  获奖情况
+                  <span style="color: #22bfa7">{{ item.level }}</span>
                 </p>
               </div>
             </el-card>
@@ -104,8 +120,10 @@
                   "
                   @click="sighUp(item.conInfor)"
                   :disabled="
-                    (item.signUpText != '正在报名' &&
-                      item.signUpText != '待支付') ||
+                    (item.conInfor.signUpText != '正在报名' &&
+                      item.conInfor.signUpText != '待支付' &&
+                      item.conInfor.signUpText != '组队接受中' &&
+                      item.conInfor.signUpText != '官网报名') ||
                     $store.getters.getUser.roleName == '老师' ||
                     $store.getters.getUser.roleName == '管理员'
                   "
@@ -144,40 +162,67 @@
             <el-table-column
               label="竞赛名称"
               prop="comName"
-              width="150"
+              width="140"
             ></el-table-column>
             <el-table-column
               label="比赛类型"
               prop="comType"
-              width="80"
+              width="70"
             ></el-table-column>
             <el-table-column
               label="比赛级别"
               prop="absComLevel"
-              width="80"
+              width="70"
             ></el-table-column>
             <el-table-column
               label="报名开始时间"
               prop="comLoginstarttime"
-              width="100"
+              width="90"
             ></el-table-column>
             <el-table-column
               label="报名结束时间"
               prop="comLoginendtime"
-              width="100"
+              width="90"
             ></el-table-column>
             <el-table-column
               label="比赛开始时间"
               prop="comDostarttime"
-              width="100"
+              width="90"
             ></el-table-column>
             <el-table-column
               label="比赛结束时间"
               prop="comDoendtime"
-              width="100"
+              width="90"
+            ></el-table-column>
+            <el-table-column
+              label="缴费金额"
+              prop="money"
+              width="70"
+            ></el-table-column>
+            <el-table-column
+              label="比赛状态"
+              prop="state"
+              width="70"
             ></el-table-column>
             <el-table-column label="操作">
               <template slot-scope="scope">
+                <!-- 编辑按钮 -->
+                <el-button
+                  type="primary"
+                  icon="el-icon-edit"
+                  size="mini"
+                  @click="showEditComDialog(scope.row.comId)"
+                  >修改
+                </el-button>
+                <!-- 删除按钮 -->
+                <el-button
+                  type="danger"
+                  icon="el-icon-delete"
+                  size="mini"
+                  @click="removeComById(scope.row.comId)"
+                >
+                  删除
+                </el-button>
                 <!-- 认定评委按钮 -->
                 <el-button
                   type="primary"
@@ -199,6 +244,7 @@
                   type="success"
                   icon="el-icon-crop"
                   size="mini"
+                  style="margin: 5px"
                   @click="inWorkList(scope.row.comId)"
                   >优秀作品
                 </el-button>
@@ -207,6 +253,7 @@
                   type="primary"
                   icon="el-icon-edit-outline"
                   size="mini"
+                  style="margin: 5px"
                   @click="openJoin(scope.row)"
                   >参赛记录
                 </el-button>
@@ -227,7 +274,7 @@
             <el-table-column
               label="竞赛名称"
               prop="comName"
-              width="350"
+              width="300"
             ></el-table-column>
             <el-table-column
               label="比赛类型"
@@ -237,22 +284,27 @@
             <el-table-column
               label="报名开始时间"
               prop="comLoginstarttime"
-              width="120"
+              width="110"
             ></el-table-column>
             <el-table-column
               label="报名结束时间"
               prop="comLoginendtime"
-              width="120"
+              width="110"
             ></el-table-column>
             <el-table-column
               label="比赛开始时间"
               prop="comDostarttime"
-              width="120"
+              width="110"
             ></el-table-column>
             <el-table-column
               label="比赛结束时间"
               prop="comDoendtime"
-              width="120"
+              width="110"
+            ></el-table-column>
+            <el-table-column
+              label="缴费金额"
+              prop="money"
+              width="80"
             ></el-table-column>
             <el-table-column label="操作">
               <template slot-scope="scope">
@@ -270,6 +322,78 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
+
+    <!-- 修改具体竞赛对话框 -->
+    <el-dialog
+      title="修改具体竞赛"
+      :visible.sync="editComDialog"
+      width="30%"
+      @close="editComDialogClosed"
+      append-to-body
+      id="editCom"
+    >
+      <!-- 内容主体区域 -->
+      <el-form :model="editComForm" label-width="100px">
+        <el-form-item label="竞赛名称">
+          <el-input v-model="editComForm.comName"></el-input>
+        </el-form-item>
+        <el-form-item label="竞赛类型">
+          <el-select v-model="editComForm.comType" placeholder="请选择">
+            <el-option
+              v-for="item in types"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="报名开始时间">
+          <el-date-picker
+            v-model="editComForm.comLoginstarttime"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            type="datetime"
+            placeholder="选择日期时间"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="报名结束时间">
+          <el-date-picker
+            v-model="editComForm.comLoginendtime"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            type="datetime"
+            placeholder="选择日期时间"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="比赛开始时间">
+          <el-date-picker
+            v-model="editComForm.comDostarttime"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            type="datetime"
+            placeholder="选择日期时间"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="比赛结束时间">
+          <el-date-picker
+            v-model="editComForm.comDoendtime"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            type="datetime"
+            placeholder="选择日期时间"
+          >
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="缴费金额">
+          <el-input v-model="editComForm.money"></el-input>
+        </el-form-item>
+      </el-form>
+      <!-- 底部区域 -->
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editComDialog = false">取 消</el-button>
+        <el-button type="primary" @click="editCom">确 定</el-button>
+      </span>
+    </el-dialog>
 
     <!-- 认定评委对话框 -->
     <el-dialog
@@ -313,6 +437,23 @@
       append-to-body
       id="joinRecordDialog"
     >
+      <div style="display: flex">
+        <el-button
+          type="primary"
+          style="margin: 10px 10px 10px 0"
+          @click="getAllLevels"
+          >生成获奖情况</el-button
+        >
+        <download-excel
+          :data="joinRecord"
+          :fields="field"
+          name="获奖情况.xls"
+          v-if="comState == '已结束'"
+        >
+          <!-- 上面可以自定义自己的样式，还可以引用其他组件button -->
+          <el-button type="warning" style="margin: 10px 0">生成报表</el-button>
+        </download-excel>
+      </div>
       <el-table :data="joinRecord" border stripe v-if="comType == '个人赛'">
         <el-table-column type="index" width="50"></el-table-column>
         <el-table-column
@@ -329,16 +470,6 @@
           label="比赛状态"
           prop="state"
           width="80"
-        ></el-table-column>
-        <el-table-column
-          label="比赛开始时间"
-          prop="starttime"
-          width="120"
-        ></el-table-column>
-        <el-table-column
-          label="比赛结束时间"
-          prop="endtime"
-          width="120"
         ></el-table-column>
         <el-table-column
           label="参赛作品路径"
@@ -363,7 +494,7 @@
               type="primary"
               icon="el-icon-download"
               size="mini"
-              :disabled="scope.row.state != '已完成'"
+              :disabled="scope.row.state != '已完成' || !scope.row.filePath"
               @click="downloadPartiWorkById(scope.row.recordId)"
             >
               下载参赛作品
@@ -373,62 +504,52 @@
       </el-table>
 
       <el-table :data="joinRecord" border stripe v-else>
-        <el-table-column type="index" width="30"></el-table-column>
+        <el-table-column type="index" width="50"></el-table-column>
         <el-table-column
           label="团队名称"
           prop="teamName"
-          width="80"
+          width="150"
         ></el-table-column>
         <el-table-column
           label="指导老师"
           prop="instruName"
-          width="80"
+          width="100"
         ></el-table-column>
         <el-table-column
           label="队长"
           prop="capital"
-          width="50"
+          width="100"
         ></el-table-column>
         <el-table-column
           label="队员"
           prop="stuStr"
-          width="50"
+          width="150"
         ></el-table-column>
         <el-table-column
           label="报名时间"
           prop="signtime"
-          width="80"
+          width="150"
         ></el-table-column>
         <el-table-column
           label="比赛状态"
           prop="state"
-          width="80"
-        ></el-table-column>
-        <el-table-column
-          label="开始时间"
-          prop="starttime"
-          width="80"
-        ></el-table-column>
-        <el-table-column
-          label="结束时间"
-          prop="endtime"
-          width="80"
+          width="100"
         ></el-table-column>
         <el-table-column
           label="参赛作品路径"
           prop="filePath"
-          width="130"
+          width="150"
         ></el-table-column>
-        <el-table-column label="评委" prop="judge" width="50"></el-table-column>
+        <el-table-column label="评委" prop="judge" width="100"></el-table-column>
         <el-table-column
           label="比赛成绩"
           prop="grade"
-          width="80"
+          width="100"
         ></el-table-column>
         <el-table-column
           label="得奖情况"
           prop="level"
-          width="80"
+          width="100"
         ></el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
@@ -437,7 +558,7 @@
               type="primary"
               icon="el-icon-download"
               size="mini"
-              :disabled="scope.row.state != '已完成'"
+              :disabled="scope.row.state != '已完成' || !scope.row.filePath"
               @click="downloadPartiWorkById(scope.row.recordId)"
             >
               下载参赛作品
@@ -465,16 +586,6 @@
           label="评审记录Id"
           prop="recordId"
           width="100"
-        ></el-table-column>
-        <el-table-column
-          label="开始时间"
-          prop="starttime"
-          width="120"
-        ></el-table-column>
-        <el-table-column
-          label="结束时间"
-          prop="endtime"
-          width="120"
         ></el-table-column>
         <el-table-column
           label="比赛状态"
@@ -637,6 +748,7 @@
           label="正文"
           prop="distributeText"
           width="350"
+          :formatter="stateFormat"
         ></el-table-column>
         <el-table-column
           label="发表时间"
@@ -820,13 +932,16 @@ export default {
   components: { Editor },
   data() {
     return {
+      curComId: "",
+      field: {},
       comType: "",
+      comState: "",
       joinRecordDialog: false,
       joinRecord: [],
       myJudgeDialog: false,
       myJudge: [],
       allComs: [],
-      activeName: "subscribe",
+      activeName: "post",
       joinComs: [],
       subscribeComs: [],
       postComs: [],
@@ -867,9 +982,28 @@ export default {
         grade: "",
       },
       judgeComId: "",
+      //修改发起竞赛
+      editComDialog: false,
+      editComForm: {
+        comId: "",
+        comName: "",
+        comType: "",
+        comTeacher: "",
+        comLoginstarttime: "",
+        comLoginendtime: "",
+        comDostarttime: "",
+        comDoendtime: "",
+        money: "",
+      },
+      //比赛类型
+      types: [
+        { label: "个人赛", value: "个人赛" },
+        { label: "团队赛", value: "团队赛" },
+      ],
     };
   },
   created() {
+    console.log("个人信息",this.$store.getters.getUser)
     this.getAllComConInfor();
     this.getMyJoinComs();
     this.getMypostComs();
@@ -877,6 +1011,102 @@ export default {
     this.getAllTeachers();
   },
   methods: {
+    async geyCurRecords() {
+      const { data: res } = await this.$http.get(
+        "competition/getrecord?comId=" + this.curComId
+      );
+      this.joinRecord = res.data;
+    },
+    async getAllLevels() {
+      console.log("当前Id", this.curComId);
+      const { data: res } = await this.$http.post("process/setlevel", {
+        comId: this.curComId,
+      });
+      console.log("返回信息", res);
+      this.geyCurRecords();
+    },
+    stateFormat(row, column, cellValue) {
+      if (!cellValue) return "";
+      if (cellValue.length > 100) {
+        //最长固定显示10个字符
+        return cellValue.slice(0, 100) + "...";
+      }
+      return cellValue;
+    },
+    //提交修改具体竞赛
+    async editCom() {
+      console.log("修改具体竞赛表单", this.editComForm);
+      const { data: res } = await this.$http.post(
+        "competition/updatecompetition",
+        this.editComForm
+      );
+      console.log("修改具体竞赛返回信息", res);
+      this.getMypostComs();
+      this.editComDialog = false;
+    },
+    //修改具体竞赛对话框关闭
+    editComDialogClosed() {
+      this.editComForm = {
+        comId: "",
+        comName: "",
+        comType: "",
+        comTeacher: this.$store.getters.getUser.userId,
+        comLoginstarttime: "",
+        comLoginendtime: "",
+        comDostarttime: "",
+        comDoendtime: "",
+      };
+    },
+    //展示修改对话框
+    showEditComDialog(id) {
+      console.log("我发起的竞赛信息", this.postComs);
+      for (let com of this.postComs) {
+        if (com.comId == id) {
+          this.editComForm = {
+            comId: id,
+            comName: com.comName,
+            comType: com.comType,
+            comTeacher: this.$store.getters.getUser.userId,
+            comLoginstarttime: com.comLoginstarttime,
+            comLoginendtime: com.comLoginendtime,
+            comDostarttime: com.comDostarttime,
+            comDoendtime: com.comDoendtime,
+            money: com.money,
+          };
+          console.log("修改表单", this.editComForm);
+          console.log("具体竞赛信息", com);
+          this.editComDialog = true;
+          return;
+        }
+      }
+    },
+    //删除具体竞赛信息
+    async removeComById(id) {
+      //弹框提示是否删除
+      const confirmResult = await this.$confirm(
+        "此操作将永久删除, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).catch((err) => err);
+      //如果确认删除，则返回值为字符串confirm
+      //如果取消删除，则返回值为字符串cancel
+      if (confirmResult !== "confirm") {
+        return this.$message({
+          showClose: true,
+          message: "已取消删除",
+          type: "info",
+        });
+      }
+      const { data: res } = await this.$http.post(
+        "competition/deletecompetition",
+        { comId: id }
+      );
+      this.getMypostComs();
+    },
     async judge() {
       const { data: res } = await this.$http.post(
         "process/givegrade",
@@ -947,10 +1177,10 @@ export default {
       for (let ann of this.announceList) {
         if (ann.noteId == id) {
           this.appdixArray = ann.appendix;
+          this.noteId = id;
+          this.appdixDialog = true;
+          return;
         }
-        this.noteId = id;
-        this.appdixDialog = true;
-        return;
       }
     },
     //删除公告信息
@@ -1045,7 +1275,7 @@ export default {
     },
     //查看竞赛公告列表
     async inAnInfor(id, id2) {
-      const { data: res } = await this.$http.get("note/getnote?absComId=" + id);
+      const { data: res } = await this.$http.get("note/getnote2?comId=" + id2);
       this.announceList = res.data;
       console.log("获取公告列表", this.announceList);
       if (this.noteId) {
@@ -1148,11 +1378,30 @@ export default {
     },
     //查看所有参赛记录
     async openJoin(com) {
+      console.log("该竞赛状态", com);
       this.comType = com.comType;
+      this.comState = com.state;
+      this.curComId = com.comId;
       const { data: res } = await this.$http.get(
         "competition/getrecord?comId=" + com.comId
       );
       this.joinRecord = res.data;
+      if (this.joinRecord.teamId != undefined) {
+        this.field = {
+          团队名称: "teamName",
+          指导老师: "instruName",
+          队长: "capital",
+          队员: "stuStr",
+          比赛成绩: "grade",
+          得奖情况: "level",
+        };
+      } else {
+        this.field = {
+          参赛学生: "stuName",
+          比赛成绩: "grade",
+          得奖情况: "level",
+        };
+      }
       console.log("参赛记录", this.joinRecord);
       this.joinRecordDialog = true;
     },
@@ -1166,6 +1415,7 @@ export default {
     },
     //查看评审记录
     lookForJudge(com) {
+      console.log("参数", com);
       this.myJudge = com.myjudge;
       this.judgeComId = com.comId;
       console.log("我的评审记录", this.myJudge);
@@ -1187,6 +1437,7 @@ export default {
         "process/appointedjudge",
         this.addJudgeForm
       );
+      console.log("认定评委返回信息", res);
       this.addJudgeDialog = false;
     },
     //认定评委对话框关闭
@@ -1216,6 +1467,13 @@ export default {
     },
     //报名
     sighUp(competition) {
+      if (competition.absComLink != "") {
+        var turnPage = document.createElement("a");
+        turnPage.setAttribute("href", competition.absComLink);
+        turnPage.setAttribute("target", "_blank");
+        turnPage.click();
+        return;
+      }
       this.$store.dispatch("asyncUpdateCompetition", competition);
       if (competition.comType == "个人赛") {
         this.$router.push("/personalSignUp");
@@ -1252,6 +1510,7 @@ export default {
           this.$store.getters.getUser.userId
       );
       this.joinComs = res.data;
+      console.log("我参加得竞赛信息", this.joinComs);
     },
     //获取我订阅的竞赛
     async getMySubscribeComs() {
@@ -1259,6 +1518,7 @@ export default {
         "note/getsub?userId=" + this.$store.getters.getUser.userId
       );
       this.subscribeComs = res.data;
+      console.log("订阅竞赛", this.subscribeComs);
       this.getConInfor();
     },
     //匹配竞赛列表和订阅竞赛列表
@@ -1272,17 +1532,24 @@ export default {
           }
         }
         if (subCom.conInfor.state == "正在报名") {
+          if (subCom.conInfor.absComLink != "") {
+            subCom.conInfor.signUpText = "官网报名";
+            continue;
+          }
           if (this.$store.getters.getUser.userId == undefined) {
             subCom.conInfor.signUpText = "报名请登录";
             continue;
           } else {
             for (let joinCom of this.joinComs) {
-              if (joinCom.comId == comp.comId) {
+              if (joinCom.comId == comId) {
                 if (joinCom.state == "待支付") {
-                  comp.signUpText = "待支付";
+                  subCom.conInfor.signUpText = "待支付";
+                  break;
+                } else if (joinCom.state == "组队接受中") {
+                  subCom.conInfor.signUpText = "组队接受中";
                   break;
                 } else {
-                  comp.signUpText = "已报名";
+                  subCom.conInfor.signUpText = "已报名";
                   break;
                 }
               }
@@ -1306,12 +1573,14 @@ export default {
       const { data: res } = await this.$http.post("process/assignitem", {
         userId: this.$store.getters.getUser.userId,
       });
+      console.log("返回信息1", res);
       this.getMyJudgeComs2();
     },
     async getMyJudgeComs2() {
       const { data: res } = await this.$http.get(
         "process/getmyjudge?userId=" + this.$store.getters.getUser.userId
       );
+      console.log("返回信息2", res);
       this.judgeComs = res.data;
       if (this.judgeComId != "") {
         for (let com of this.judgeComs) {

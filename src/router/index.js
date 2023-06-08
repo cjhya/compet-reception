@@ -19,9 +19,14 @@ import MyMessage from "../views/message/MyMessage.vue";
 import SearchRes from "../views/secondaryPage/SearchRes.vue";
 import PostCompetition from "../views/secondaryPage/PostCompetition.vue";
 import MyCompetition from "../views/myCompetition/MyCompetition.vue";
-import PersonInfor from "../views/personInfor/PersonInfor.vue"
-import JoinCompetition from "../views/myCompetition/JoinCompetition.vue"
-import ExcellentWork from "../views/competition/ExcellentWork.vue"
+import PersonInfor from "../views/personInfor/PersonInfor.vue";
+import JoinCompetition from "../views/myCompetition/JoinCompetition.vue";
+import ExcellentWork from "../views/competition/ExcellentWork.vue";
+import PostAbsCompetition from "../views/secondaryPage/PostAbsCompetition.vue";
+import Activity from "../views/activity/Activity.vue";
+import ActInfor from "../views/activity/ActInfor.vue";
+import PostActivity from "../views/secondaryPage/PostActivity.vue";
+import MyActivity from "../views/myActivity/MyActivity.vue";
 
 Vue.use(Router);
 
@@ -40,9 +45,13 @@ const router = new Router({
         { path: "/loginRegister", component: LoginRegister },
         { path: "/frontPage", component: FrontPage },
         { path: "/competition", component: Competition },
+        { path: "/activity", component: Activity },
         { path: "/forum", component: Forum },
         { path: "/postArticle", component: PostArticle },
         { path: "/postCompetition", component: PostCompetition },
+        { path: "/postAbsCompetition", component: PostAbsCompetition },
+        { path: "/actInfor", component: ActInfor },
+        { path: "/postActivity", component: PostActivity },
         {
           path: "/infor",
           component: Infor,
@@ -70,15 +79,16 @@ const router = new Router({
         { path: "/myCompetition", component: MyCompetition },
         { path: "/personInfor", component: PersonInfor },
         { path: "/joinCompetition", component: JoinCompetition },
+        { path: "/myActivity", component: MyActivity },
       ],
     },
   ],
 });
 
 //解决重复点击相同路径
-const VueRouterPush = Router.prototype.push
-Router.prototype.push = function push (to) {
-  return VueRouterPush.call(this, to).catch(err => err)
-}
+const VueRouterPush = Router.prototype.push;
+Router.prototype.push = function push(to) {
+  return VueRouterPush.call(this, to).catch((err) => err);
+};
 
 export default router;

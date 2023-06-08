@@ -8,6 +8,7 @@ import "./assets/css/global.css"
 import axios from "axios";
 import Vuex from "vuex";
 import store from "./store";
+import JsonExcel from 'vue-json-excel';
 
 axios.defaults.baseURL = "https://4wr6987968.yicp.fun/";
 
@@ -17,6 +18,7 @@ Vue.use(ElementUI);
 Vue.prototype.$http = axios;
 Vue.use(Vuex);
 Vue.prototype.$store = store;
+Vue.component('downloadExcel', JsonExcel)
 
 new Vue({
   router,

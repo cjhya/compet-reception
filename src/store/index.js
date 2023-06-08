@@ -13,6 +13,9 @@ const state = {
   record: {},
   //与某人聊天
   chatPerson: {},
+  //获取我的文章
+  forum: "",
+  activity:{}
 };
 
 //获取state数据
@@ -37,6 +40,12 @@ const getters = {
   },
   getChatPerson(state) {
     return state.chatPerson;
+  },
+  getForum(state) {
+    return state.forum;
+  },
+  getActivity(state) {
+    return state.activity;
   },
 };
 
@@ -63,6 +72,12 @@ const mutations = {
   updateChatPerson(state, data) {
     state.chatPerson = data;
   },
+  updateForum(state, data) {
+    state.forum = data;
+  },
+  updateActivity(state, data) {
+    state.activity = data;
+  },
 };
 
 //异步执行mutations方法
@@ -87,6 +102,12 @@ const actions = {
   },
   asyncUpdateChatPerson(content, chatPerson) {
     content.commit("updateChatPerson", chatPerson);
+  },
+  asyncUpdateForum(content, forum) {
+    content.commit("updateForum", forum);
+  },
+  asyncUpdateActivity(content, activity) {
+    content.commit("updateActivity", activity);
   },
 };
 

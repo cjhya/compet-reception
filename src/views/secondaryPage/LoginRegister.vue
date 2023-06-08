@@ -76,7 +76,7 @@ export default {
       },
       loginForm: {
         userName: "",
-        password: "",
+        password: "123456",
       },
       roles: [],
     };
@@ -106,6 +106,14 @@ export default {
     //提交登录
     async login() {
       const { data: res } = await this.$http.post("login/", this.loginForm);
+      console.log("登录返回信息", res);
+      if (res.meta !== true) {
+        return this.$message({
+          showClose: true,
+          message: "登录失败",
+          type: "error",
+        });
+      }
       this.$store.dispatch("asyncUpdateUser", res.data);
       this.$emit("judgeLogin");
       this.$message({
@@ -114,7 +122,7 @@ export default {
         type: "success",
       });
       this.$router.push("/frontPage");
-      console.log("用户个人信息",this.$store.getters.getUser)
+      console.log("用户个人信息", this.$store.getters.getUser);
     },
     //提交注册
     async register() {
@@ -122,6 +130,20 @@ export default {
         "login/regist",
         this.registerForm
       );
+      console.log("注册返回信息", res);
+      if (res.meta !== true) {
+        return this.$message({
+          showClose: true,
+          message: "登录失败",
+          type: "error",
+        });
+      }
+      this.$message({
+        showClose: true,
+        message: "注册成功",
+        type: "success",
+      });
+      this.$router.push("/frontPage");
     },
   },
 };

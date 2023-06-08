@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-carousel height="350px">
+    <el-carousel height="400px">
       <el-carousel-item
         v-for="item in comHot"
         :key="item.comId"
@@ -41,6 +41,34 @@
         </el-row>
       </div>
     </el-card>
+
+    <el-card style="margin: 10px 40px">
+      <div slot="header" class="clearfix">
+        <h3 style="font-size: 22px; margin: 0">热门活动</h3>
+        <el-link style="float: right" type="primary">查看更多</el-link>
+      </div>
+      <div>
+        <el-row type="flex" justify="space-between">
+          <el-col
+            :span="5"
+            v-for="item in actHot"
+            :key="item.activityId"
+            style="margin: 10px 10px 0 20px"
+          >
+            <div>
+              <el-image :src="item.activityPicture"></el-image>
+              <p style="font-size: 14px">
+                <el-tag size="mini">{{ item.state }}</el-tag>
+                {{ item.activityName }}
+              </p>
+              <p style="font-size: 12px; color: #aaaaaa">
+                主办方: {{ item.activityHost }}
+              </p>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -51,16 +79,23 @@ export default {
     return {
       comHot: [],
       joinComs: [],
+      actHot: [],
     };
   },
   created() {
-    //获取首页热点竞赛
     this.getAllComHot();
     if (this.$store.getters.getUser.userId != undefined) {
       this.getMyJoinComs();
     }
+    this.getAllActHot();
   },
   methods: {
+    async getAllActHot() {
+      const { data: res } = await this.$http.get("activity/gethotactivity");
+      this.actHot = res.data;
+      this.actHot = this.actHot.slice(0, 5);
+      console.log("查看热门活动返回信息", res);
+    },
     //获取我参加的竞赛
     async getMyJoinComs() {
       const { data: res } = await this.$http.get(
@@ -90,23 +125,34 @@ export default {
     async getAllComHot() {
       const { data: res } = await this.$http.get("competition/gethot");
       this.comHot = res.data;
+      this.comHot = this.comHot.slice(0, 5);
       for (let comp of this.comHot) {
         if (comp.state == "正在报名") {
+          if (comp.absComLink != "") {
+            comp.signUpText = "官网报名";
+            continue;
+          }
           if (this.$store.getters.getUser.userId == undefined) {
             comp.signUpText = "报名请登录";
             continue;
           } else {
-            for(let joinCom of this.joinComs){
-              if(joinCom.comId==comp.comId){
-                comp.sighUpText = "已报名";
-                break;
+            for (let joinCom of this.joinComs) {
+              if (joinCom.comId == comp.comId) {
+                if (joinCom.state == "待支付") {
+                  comp.signUpText = "待支付";
+                  break;
+                } else if (joinCom.state == "组队接受中") {
+                  comp.signUpText = "组队接受中";
+                  break;
+                } else {
+                  comp.signUpText = "已报名";
+                  break;
+                }
               }
             }
-            comp.sighUpText = "马上报名";
           }
         }
-        if(comp.signUpText=="")
-          comp.signUpText = comp.state;
+        if (comp.signUpText == undefined) comp.signUpText = comp.state;
       }
     },
   },

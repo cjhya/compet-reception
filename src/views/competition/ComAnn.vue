@@ -11,9 +11,14 @@
     >
       竞赛公告
     </h2>
-    <div v-for="item in notes" :key="item.noteId" @click="toConNote(item)" style="margin:10px 0">
+    <div
+      v-for="item in notes"
+      :key="item.noteId"
+      @click="toConNote(item)"
+      style="margin: 10px 0"
+    >
       <h1 style="font-size: 18px; color: #262626">{{ item.noteTitle }}</h1>
-      <div
+      <!-- <div
         v-html="item.distributeText"
         style="
           overflow: hidden;
@@ -21,7 +26,7 @@
           text-overflow: ellipsis;
           font-size: 13px;
         "
-      ></div>
+      ></div> -->
       <p style="font-size: 12px; color: #aaaaaa">{{ item.distributeTime }}</p>
     </div>
   </div>
@@ -41,9 +46,10 @@ export default {
   methods: {
     async getAnns() {
       const { data: res } = await this.$http.get(
-        "note/getnote?absComId=" + this.$store.getters.getCompetition.absComId
+        "note/getnote2?comId=" + this.$store.getters.getCompetition.comId
       );
       this.notes = res.data;
+      console.log("公告列表", this.notes);
     },
     toConNote(note) {
       this.$store.dispatch("asyncUpdateNote", note);

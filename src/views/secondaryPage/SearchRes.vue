@@ -46,7 +46,9 @@
                 @click="signUp(item)"
                 :disabled="
                   (item.signUpText != '正在报名' &&
-                    item.signUpText != '待支付') ||
+                    item.signUpText != '待支付' &&
+                    item.signUpText != '组队接受中' &&
+                    item.signUpText != '官网报名') ||
                   $store.getters.getUser.roleName == '老师' ||
                   $store.getters.getUser.roleName == '管理员'
                 "
@@ -59,10 +61,7 @@
               >
                 距离报名{{ item.statusText }}还有{{ item.remain }}天
               </p>
-              <p
-                @click="toComInfor(item)"
-                style="color: #666666"
-              >
+              <p @click="toComInfor(item)" style="color: #666666">
                 <el-link
                   :underline="false"
                   :class="{ isSignText: item.state != '正在报名' }"
@@ -166,6 +165,10 @@ export default {
       this.compets = res.data;
       for (let comp of this.compets) {
         if (comp.state == "正在报名") {
+          if (comp.absComLink != "") {
+            comp.signUpText = "官网报名";
+            continue;
+          }
           if (this.$store.getters.getUser.userId == undefined) {
             comp.signUpText = "报名请登录";
             continue;
@@ -174,6 +177,9 @@ export default {
               if (joinCom.comId == comp.comId) {
                 if (joinCom.state == "待支付") {
                   comp.signUpText = "待支付";
+                  break;
+                } else if (joinCom.state == "组队接受中") {
+                  comp.signUpText = "组队接受中";
                   break;
                 } else {
                   comp.signUpText = "已报名";
@@ -188,7 +194,7 @@ export default {
           comp.signUpText = comp.state;
         }
       }
-      console.log("搜索关键字返回信息",this.compets)
+      console.log("搜索关键字返回信息", this.compets);
     },
     async getAllArticles() {
       const { data: res } = await this.$http.get(
@@ -198,6 +204,13 @@ export default {
     },
     //报名按钮
     sighUp(competition) {
+      if (competition.absComLink != "") {
+        var turnPage = document.createElement("a");
+        turnPage.setAttribute("href", competition.absComLink);
+        turnPage.setAttribute("target", "_blank");
+        turnPage.click();
+        return;
+      }
       this.$store.dispatch("asyncUpdateCompetition", competition);
       if (competition.comType == "个人赛") {
         this.$router.push("/personalSignUp");

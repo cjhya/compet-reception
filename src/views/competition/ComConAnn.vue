@@ -7,7 +7,7 @@
         font-weight: 600;
         border-left: 4px solid #22bfa7;
         padding-left: 10px;
-        margin:50px
+        margin: 50px;
       "
     >
       公告信息
@@ -25,11 +25,21 @@
     </h1>
     <div
       v-html="note.distributeText"
-      style="margin: 5px 40px; font-size: 18px; color: #666666;padding:20px 50px"
+      style="
+        margin: 5px 40px;
+        font-size: 18px;
+        color: #666666;
+        padding: 20px 50px;
+      "
     ></div>
-    <el-card style="width: 600px; margin: 30px auto">
+    <el-card
+      style="width: 600px; margin: 30px auto"
+      v-if="note.appendix.length != 0"
+    >
       <div slot="header" class="clearfix">
-        <span style="font-size:22px;color:#666666;font-weight:600">附件列表</span>
+        <span style="font-size: 22px; color: #666666; font-weight: 600"
+          >附件列表</span
+        >
       </div>
       <div
         v-for="item in note.appendix"
@@ -58,7 +68,7 @@ export default {
   },
   created() {
     this.note = this.$store.getters.getNote;
-    console.log("公告",this.note)
+    console.log("公告", this.note);
   },
 };
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-carousel height="350px">
+    <el-carousel height="400px">
       <el-carousel-item
         v-for="item in recomComs"
         :key="item.comId"
@@ -85,6 +85,9 @@
               <p style="font-size: 14px; color: #aaaaaa">
                 竞赛级别 {{ item.absComLevel }}
               </p>
+              <p style="font-size: 14px; color: #aaaaaa">
+                竞赛类型 {{ item.comType }}
+              </p>
               <p style="font-size: 14px; color: #aaaaaa; margin: 0">
                 报名时间 {{ item.comLoginstarttime }} ~
                 {{ item.comLoginendtime }}
@@ -104,7 +107,9 @@
                 @click="signUp(item)"
                 :disabled="
                   (item.signUpText != '正在报名' &&
-                    item.signUpText != '待支付') ||
+                    item.signUpText != '待支付' &&
+                    item.signUpText != '组队接受中' &&
+                    item.signUpText != '官网报名') ||
                   $store.getters.getUser.roleName == '老师' ||
                   $store.getters.getUser.roleName == '管理员'
                 "
@@ -130,19 +135,96 @@
       </div>
       <div style="flex: 1">
         <div
+          v-if="$store.getters.getUser.userId != undefined"
           class="toplist"
           style="border: 1px solid #e6e6e6; margin-top: 20px; width: 80%"
         >
           <header class="t-header">
             <h1
               class="t-h-name"
-              style="color: #31363f; font-size: 18px; margin: 0 0 0 10px"
+              style="
+                color: #31363f;
+                font-size: 18px;
+                margin: 0 0 0 10px;
+                border-left: 4px solid #22bfa7;
+                padding-left: 10px;
+              "
             >
-              推荐竞赛排行榜
+              推荐竞赛Top10
             </h1>
           </header>
           <div
             v-for="(item, index) in recomComs"
+            :key="index"
+            class="toplist-item"
+            @click="toComInfor(item)"
+          >
+            <i class="t-i-number" style="margin: 0 2px 0 0; font-size: 14px">{{
+              index + 1
+            }}</i>
+            <div class="t-i-tilte">
+              <span style="font-size: 12px; color: #31363f">{{
+                item.comName
+              }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="toplist"
+          style="border: 1px solid #e6e6e6; margin-top: 20px; width: 80%"
+        >
+          <header class="t-header">
+            <h1
+              class="t-h-name"
+              style="
+                color: #31363f;
+                font-size: 18px;
+                margin: 0 0 0 10px;
+                border-left: 4px solid #22bfa7;
+                padding-left: 10px;
+              "
+            >
+              热门竞赛Top10
+            </h1>
+          </header>
+          <div
+            v-for="(item, index) in comHots"
+            :key="index"
+            class="toplist-item"
+            @click="toComInfor(item)"
+          >
+            <i class="t-i-number" style="margin: 0 2px 0 0; font-size: 14px">{{
+              index + 1
+            }}</i>
+            <div class="t-i-tilte">
+              <span style="font-size: 12px; color: #31363f">{{
+                item.comName
+              }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="toplist"
+          style="border: 1px solid #e6e6e6; margin-top: 20px; width: 80%"
+        >
+          <header class="t-header">
+            <h1
+              class="t-h-name"
+              style="
+                color: #31363f;
+                font-size: 18px;
+                margin: 0 0 0 10px;
+                border-left: 4px solid #22bfa7;
+                padding-left: 10px;
+              "
+            >
+              最新竞赛Top10
+            </h1>
+          </header>
+          <div
+            v-for="(item, index) in newComs"
             :key="index"
             class="toplist-item"
             @click="toComInfor(item)"
@@ -185,19 +267,35 @@ export default {
       compets: [],
       recomComs: [],
       joinComs: [],
+      comHots: [],
+      newComs: [],
     };
   },
   created() {
     //获取所有竞赛分类
     this.getClassList();
-    this.getRecommendComs();
+    this.getHotComs();
+    this.getNewComs();
     if (this.$store.getters.getUser.userId != undefined) {
+      this.getRecommendComs();
       this.getMyJoinComs();
     } else {
       this.getCompets2("全部");
     }
   },
   methods: {
+    //获取热门竞赛
+    async getHotComs() {
+      const { data: res } = await this.$http.get("competition/gethot");
+      this.comHots = res.data;
+      this.comHots = this.comHots.slice(0, 10);
+    },
+    //获取最新竞赛
+    async getNewComs() {
+      const { data: res } = await this.$http.get("competition/getnew");
+      this.newComs = res.data;
+      this.newComs = this.newComs.slice(0, 10);
+    },
     //获取我参加的竞赛
     async getMyJoinComs() {
       const { data: res } = await this.$http.get(
@@ -214,6 +312,7 @@ export default {
         "competition/getrecommend?userId=" + this.$store.getters.getUser.userId
       );
       this.recomComs = res.data;
+      this.recomComs = this.recomComs.slice(0, 10);
     },
     //获取所有竞赛分类
     async getClassList() {
@@ -237,8 +336,13 @@ export default {
           (this.activeLevel == "全部" ? "" : this.activeLevel)
       );
       this.compets = res.data;
+      console.log("所有竞赛", this.compets);
       for (let comp of this.compets) {
         if (comp.state == "正在报名") {
+          if (comp.absComLink != "") {
+            comp.signUpText = "官网报名";
+            continue;
+          }
           if (this.$store.getters.getUser.userId == undefined) {
             comp.signUpText = "报名请登录";
             continue;
@@ -247,6 +351,9 @@ export default {
               if (joinCom.comId == comp.comId) {
                 if (joinCom.state == "待支付") {
                   comp.signUpText = "待支付";
+                  break;
+                } else if (joinCom.state == "组队接受中") {
+                  comp.signUpText = "组队接受中";
                   break;
                 } else {
                   comp.signUpText = "已报名";
@@ -272,8 +379,13 @@ export default {
           (this.activeLevel == "全部" ? "" : this.activeLevel)
       );
       this.compets = res.data;
+      console.log("所有竞赛", this.compets);
       for (let comp of this.compets) {
         if (comp.state == "正在报名") {
+          if (comp.absComLink != "") {
+            comp.signUpText = "官网报名";
+            continue;
+          }
           if (this.$store.getters.getUser.userId == undefined) {
             comp.signUpText = "报名请登录";
             continue;
@@ -282,6 +394,9 @@ export default {
               if (joinCom.comId == comp.comId) {
                 if (joinCom.state == "待支付") {
                   comp.signUpText = "待支付";
+                  break;
+                } else if (joinCom.state == "组队接受中") {
+                  comp.signUpText = "组队接受中";
                   break;
                 } else {
                   comp.signUpText = "已报名";
@@ -309,7 +424,15 @@ export default {
     },
     //报名按钮
     signUp(competition) {
+      if (competition.absComLink != "") {
+        var turnPage = document.createElement("a");
+        turnPage.setAttribute("href", competition.absComLink);
+        turnPage.setAttribute("target", "_blank");
+        turnPage.click();
+        return;
+      }
       this.$store.dispatch("asyncUpdateCompetition", competition);
+      console.log("竞赛信息", competition);
       if (competition.comType == "个人赛") {
         this.$router.push("/personalSignUp");
       } else {
@@ -333,7 +456,10 @@ export default {
   color: #333;
 }
 .el-tag:hover {
-  color: #22bfa7;
+  background: #e7fffb !important;
+  color: #22bfa7 !important;
+  border-radius: 2px !important;
+  font-weight: 300 !important;
 }
 .el-tag.act {
   color: #22bfa7;

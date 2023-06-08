@@ -1,5 +1,15 @@
 <template>
   <div style="width: 60%; margin: 30px auto">
+    <h1
+      style="
+        font-size: 15px;
+        color: #666666;
+        border-left: 4px solid #22bfa7;
+        padding-left: 10px;
+      "
+    >
+      个人信息
+    </h1>
     <el-form :model="personInfor" label-width="80px" size="medium">
       <el-form-item label="上传头像">
         <el-upload
@@ -7,7 +17,6 @@
           action="#"
           :show-file-list="false"
           :on-success="handleAvatarSuccess"
-          :before-upload="beforeAvatarUpload"
           :http-request="httpRequest"
           ref="uploadAva"
           :auto-upload="false"
@@ -39,10 +48,8 @@
       <el-form-item label="角色">
         <el-tag>{{ personInfor.roleName }}</el-tag>
       </el-form-item>
-      <el-form-item label="是否评委">
-        <el-tag v-if="personInfor.roleName === '老师'">{{
-          personInfor.isjudge
-        }}</el-tag>
+      <el-form-item label="是否评委" v-if="personInfor.roleName === '老师'">
+        <el-tag>{{ personInfor.isjudge }}</el-tag>
       </el-form-item>
       <el-form-item label="性别">
         <el-input v-model="personInfor.sex"></el-input>
@@ -55,6 +62,9 @@
       </el-form-item>
       <el-form-item label="学院">
         <el-input v-model="personInfor.school"></el-input>
+      </el-form-item>
+      <el-form-item label="邮箱">
+        <el-input v-model="personInfor.email"></el-input>
       </el-form-item>
       <el-form-item label="手机">
         <el-input v-model="personInfor.phone"></el-input>
@@ -88,18 +98,6 @@ export default {
       this.imageUrl = URL.createObjectURL(file.raw);
       console.log("图片路径", this.imageUrl);
     },
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
-      const isLt2M = file.size / 1024 / 1024 < 2;
-
-      if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG 格式!");
-      }
-      if (!isLt2M) {
-        this.$message.error("上传头像图片大小不能超过 2MB!");
-      }
-      return isJPG && isLt2M;
-    },
     async editInfor() {
       const { data: res } = await this.$http.post("user/updateuser", {
         userId: this.personInfor.userId,
@@ -112,6 +110,7 @@ export default {
         userPhone: this.personInfor.phone,
         college: this.personInfor.college,
         school: this.personInfor.school,
+        userEmail: this.personInfor.email,
       });
       console.log("修改信息返回信息", res);
       this.uploadAvater();

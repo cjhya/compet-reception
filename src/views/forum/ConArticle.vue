@@ -18,7 +18,10 @@
         >
         <div class="top">
           <div class="head-pic">
-            <el-avatar :src="article.headpicture" @click.native="artAvaToMyMessage(article)"></el-avatar>
+            <el-avatar
+              :src="article.headpicture"
+              @click.native="artAvaToMyMessage(article)"
+            ></el-avatar>
           </div>
           <div class="info-detail">
             <div class="name">{{ article.artUser }}</div>
@@ -84,6 +87,16 @@
                 }}<span class="changeHover" @click="replyFirstComment(item)">
                   回复</span
                 >
+                <span
+                  class="changeHover"
+                  @click="deleteComment(item)"
+                  v-if="
+                    item.userId == $store.getters.getUser.userId ||
+                    article.userId == $store.getters.getUser.userId
+                  "
+                >
+                  删除</span
+                >
               </div>
             </div>
           </div>
@@ -115,6 +128,15 @@
                   />{{ secItem.commApprove
                   }}<span class="changeHover" @click="replySecComment(secItem)">
                     回复</span
+                  ><span
+                    class="changeHover"
+                    @click="deleteComment(secItem)"
+                    v-if="
+                      secItem.userId == $store.getters.getUser.userId ||
+                      article.userId == $store.getters.getUser.userId
+                    "
+                  >
+                    删除</span
                   >
                 </div>
               </div>
@@ -146,24 +168,55 @@ export default {
     this.getAllComments();
   },
   methods: {
+    //删除评论
+    async deleteComment(item) {
+      //弹框提示是否删除
+      const confirmResult = await this.$confirm(
+        "此操作将永久删除该条评论, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        }
+      ).catch((err) => err);
+      //如果确认删除，则返回值为字符串confirm
+      //如果取消删除，则返回值为字符串cancel
+      if (confirmResult !== "confirm") {
+        return this.$message({
+          showClose: true,
+          message: "已取消删除",
+          type: "info",
+        });
+      }
+      const { data: res } =await this.$http.post("forum/deletecomment", {
+        commId: item.commId,
+      });
+      this.getAllComments();
+    },
     //跳转我的消息页面
     artAvaToMyMessage(item) {
-      this.$store.dispatch("asyncUpdateChatPerson", {
-        listuserId: item.userId,
-        listuserName: item.artUser,
-        listuserheadpicture: item.headpicture,
-      });
-      this.$router.push("/myMessage");
+      console.log("用户个人信息", item);
+      if (item.userId != this.$store.getters.getUser.userId) {
+        this.$store.dispatch("asyncUpdateChatPerson", {
+          listuserId: item.userId,
+          listuserName: item.artUser,
+          listuserheadpicture: item.headpicture,
+        });
+        this.$router.push("/myMessage");
+      }
     },
     //跳转我的消息页面
     toMyMessage(item) {
       console.log("用户信息", item);
-      this.$store.dispatch("asyncUpdateChatPerson", {
-        listuserId: item.userId,
-        listuserName: item.commUser,
-        listuserheadpicture: item.headpicture,
-      });
-      this.$router.push("/myMessage");
+      if (item.userId != this.$store.getters.getUser.userId) {
+        this.$store.dispatch("asyncUpdateChatPerson", {
+          listuserId: item.userId,
+          listuserName: item.commUser,
+          listuserheadpicture: item.headpicture,
+        });
+        this.$router.push("/myMessage");
+      }
     },
     //点击空白处清除输入框信息
     clearInput() {

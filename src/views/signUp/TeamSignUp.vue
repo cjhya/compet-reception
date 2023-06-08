@@ -108,8 +108,10 @@
           </div>
 
           <div style="float: right; margin: 10px 0">
-            <el-button @click="active--">返回上一步</el-button>
-            <el-button @click="active++" :disabled="teamState=='组队接受中'">下一步</el-button>
+            <el-button @click="getCompState">刷新</el-button>
+            <el-button @click="active++" :disabled="teamState == '组队接受中'"
+              >下一步</el-button
+            >
           </div>
         </div>
       </div>
@@ -117,28 +119,56 @@
       <div v-show="active == 3">
         <div style="width: 60%; margin: 0 auto">
           <div>
-            <h2>你需缴费XX元，是否</h2>
-            <el-link
-              href="https://4wr6987968.yicp.fun/paymoney/dingdan"
-              target="_blank"
-              type="primary"
-              style="font-size: 24px"
-              >前去缴费</el-link
-            >
+            <h1 style="font-size: 20px">
+              你需缴费<span>{{ money }}</span
+              >元
+              <el-link
+                :href="
+                  'https://4wr6987968.yicp.fun/paymoney/dingdan?recordId=' +
+                  recordId +
+                  '&money=' +
+                  money +
+                  '&comName=' +
+                  comName
+                "
+                target="_blank"
+                type="primary"
+                style="font-size: 20px"
+                @click.native="initMesSocket"
+                v-if="money!=0"
+                >，前去缴费</el-link
+              >
+            </h1>
+            <p style="font-size: 14px; color: #aaaaaa" v-if="money!=0">
+              支付状态
+              <span style="font-size: 14px; color: #22bfa7">{{
+                payStateText
+              }}</span>
+            </p>
           </div>
 
           <div style="float: right; margin: 10px 0">
-            <el-button @click="active--">返回上一步</el-button>
-            <el-button @click="active++">下一步</el-button>
+            <el-button
+              @click="active++"
+              :disabled="payStateText == '待支付' && money != 0"
+              >下一步</el-button
+            >
           </div>
         </div>
       </div>
 
       <div v-show="active == 4" style="width: 60%; margin: 0 auto">
-        <h1>报名成功，请关注后续通知</h1>
-        <el-button @click="toFrontPage" style="float: right; margin: 10px 0"
-          >返回首页</el-button
+        <el-result
+          icon="success"
+          title="缴费成功"
+          subTitle="请根据提示进行操作"
         >
+          <template slot="extra">
+            <el-button type="primary" size="medium" @click="toFrontPage"
+              >返回首页</el-button
+            >
+          </template>
+        </el-result>
       </div>
     </el-card>
   </div>
@@ -162,6 +192,12 @@ export default {
       teaReceiveState: [],
       stuReceiveState: [],
       teamState: "",
+      recordId: "",
+      //支付相关信息
+      mesSocket: null,
+      payStateText: "待支付",
+      money: "",
+      comName: "",
     };
   },
   created() {
@@ -171,6 +207,19 @@ export default {
     this.getAllStus();
   },
   methods: {
+    initMesSocket() {
+      this.mesSocket = new WebSocket("wss://4wr6987968.yicp.fun/ws/money/");
+      this.mesSocket.onmessage = this.mesSocketMessage;
+    },
+    mesSocketMessage(msg) {
+      const arr = JSON.parse(msg.data).res1.data;
+      for (let pay of arr) {
+        if (pay.recordId == this.recordId && pay.ispay == "是") {
+          this.payStateText = "支付完成";
+          this.mesSocket.close();
+        }
+      }
+    },
     //获取我参加的竞赛
     async getMyJoinComs() {
       const { data: res } = await this.$http.get(
@@ -184,7 +233,20 @@ export default {
     async judgeComStatus() {
       for (let com of this.joinComs) {
         if (com.comId == this.$store.getters.getCompetition.comId) {
+          if (com.state == "待支付") {
+            this.active = 3;
+            this.recordId = com.recordId;
+            this.money = com.money;
+            this.comName = com.comName;
+            console.log("支付状态", this.recordId, this.money, this.comName);
+            return;
+          }
           this.active = 2;
+          this.recordId = com.recordId;
+          this.money = com.money;
+          this.comName = com.comName;
+          console.log("支付状态", this.recordId, this.money, this.comName);
+          console.log("比赛状态", com);
           const { data: res } = await this.$http.get(
             "process/getreceivestate?recordId=" + com.recordId
           );
@@ -196,8 +258,19 @@ export default {
       }
       this.active = 0;
     },
+    //发送邮件邀请
+    async postEmail() {
+      const { data: res } = await this.$http.post("qqmail/sendemail", {
+        comId: this.$store.getters.getCompetition.comId,
+        fromuser: this.$store.getters.getUser.name,
+        inviteinstr: this.teamInforForm.instrArray,
+        invitestu: this.teamInforForm.stuArray,
+      });
+      console.log("发送邮件邀请返回信息", res);
+    },
     //发送邀请
     async sendInvitation() {
+      this.postEmail();
       const { data: res } = await this.$http.post("process/signup", {
         comId: this.$store.getters.getCompetition.comId,
         fromuser: this.$store.getters.getUser.name,
@@ -205,7 +278,19 @@ export default {
         inviteinstr: this.teamInforForm.instrArray,
         invitestu: this.teamInforForm.stuArray,
       });
+      this.recordId = res.recordId;
+      this.money = res.money;
+      this.comName = res.comName;
+      this.getCompState();
       this.active++;
+    },
+    async getCompState() {
+      const { data: res } = await this.$http.get(
+        "process/getreceivestate?recordId=" + this.recordId
+      );
+      this.teaReceiveState = res.teacher;
+      this.stuReceiveState = res.student;
+      this.teamState = res.state;
     },
     toFrontPage() {
       this.$router.push("/frontPage");

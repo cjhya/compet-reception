@@ -2,7 +2,9 @@
   <div style="width: 60%; margin: 10px auto">
     <el-card>
       <div slot="header">
-        <span>发布竞赛</span>
+        <span style="border-left: 4px solid #22bfa7; padding-left: 10px"
+          >发布具体竞赛</span
+        >
       </div>
       <el-form
         :model="competForm"
@@ -15,7 +17,6 @@
             action="#"
             :show-file-list="false"
             :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
             :http-request="httpRequest"
             ref="uploadPic"
             :auto-upload="false"
@@ -63,35 +64,38 @@
         <el-form-item label="报名开始时间">
           <el-date-picker
             v-model="competForm.comLoginstarttime"
-            type="date"
-            placeholder="选择日期"
+            type="datetime"
+            placeholder="选择日期时间"
           >
           </el-date-picker>
         </el-form-item>
         <el-form-item label="报名结束时间">
           <el-date-picker
             v-model="competForm.comLoginendtime"
-            type="date"
-            placeholder="选择日期"
+            type="datetime"
+            placeholder="选择日期时间"
           >
           </el-date-picker>
         </el-form-item>
         <el-form-item label="比赛开始时间">
           <el-date-picker
             v-model="competForm.comDostarttime"
-            type="date"
-            placeholder="选择日期"
+            type="datetime"
+            placeholder="选择日期时间"
           >
           </el-date-picker>
         </el-form-item>
         <el-form-item label="比赛结束时间">
           <el-date-picker
             v-model="competForm.comDoendtime"
-            type="date"
-            placeholder="选择日期"
+            type="datetime"
+            placeholder="选择日期时间"
           >
           </el-date-picker>
         </el-form-item>
+        <el-form-item label="缴费金额">
+          <el-input v-model="competForm.money"></el-input
+        ></el-form-item>
       </el-form>
       <div style="float: right; margin: 0 20px 20px 0">
         <el-button @click="cancel">取消</el-button>
@@ -120,6 +124,7 @@ export default {
         comDostarttime: "",
         comDoendtime: "",
         comTeacher: "",
+        money: "0",
       },
     };
   },
@@ -134,18 +139,6 @@ export default {
     handleAvatarSuccess(res, file) {
       this.imageUrl = URL.createObjectURL(file.raw);
     },
-    beforeAvatarUpload(file) {
-      const isJPG = file.type === "image/jpeg";
-      const isLt2M = file.size / 1024 / 1024 < 2;
-
-      if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG 格式!");
-      }
-      if (!isLt2M) {
-        this.$message.error("上传头像图片大小不能超过 2MB!");
-      }
-      return isJPG && isLt2M;
-    },
     async postCom() {
       this.$refs.uploadPic.submit();
       let fd = new FormData();
@@ -154,7 +147,7 @@ export default {
         fd.append(i, this.competForm[i]);
       }
       fd.append("headpicture", this.avaFile);
-      console.log("参数1",this.competForm,this.avaFile)
+      console.log("参数1", this.competForm, this.avaFile);
       console.log("发布竞赛参数", fd);
       const { data: res } = await this.$http.post(
         "competition/addcompetition",
@@ -180,6 +173,7 @@ export default {
         comDostarttime: "",
         comDoendtime: "",
         comTeacher: this.$store.getters.getUser.userId,
+        money: "0",
       };
       this.$router.push("/frontPage");
       this.$emit("changeIndex", "/frontPage");
